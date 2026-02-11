@@ -4,14 +4,11 @@ const pool = require("../services/db");
 
 const router = express.Router();
 
-console.log("Auth router initialized");
-
 /**
  * POST /auth/register
  * Body: { email, password }
  */
 router.post("/register", async (req, res) => {
-  console.log("POST /auth/register called with:", req.body);
   try {
     const { email, password } = req.body;
 

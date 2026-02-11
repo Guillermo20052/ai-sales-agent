@@ -21,12 +21,10 @@ app.use(
 
 // ROUTES
 const authRoutes = require("./routes/auth");
-console.log("Loading Auth routes...");
 const chatRoutes = require("./routes/chat");
 const dashboardRoutes = require("./routes/dashboard");
 
 app.use("/auth", authRoutes);
-console.log("Auth routes mounted at /auth");
 app.use("/chat", chatRoutes);
 app.use("/dashboard", dashboardRoutes);
 
@@ -36,6 +34,6 @@ app.get("/", (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
