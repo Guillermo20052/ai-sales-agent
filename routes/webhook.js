@@ -41,7 +41,7 @@ router.post("/", async (req, res) => {
       return res.json({ received: true });
     }
 
-    await pool.query("UPDATE users SET is_paid = true WHERE id = $1", [userId]);
+    await pool.query("UPDATE users SET is_paid = true, subscription_status = 'active' WHERE id = $1", [userId]);
 
     console.log("✅ Subscription activated for user:", userId);
   }
@@ -81,7 +81,7 @@ router.post("/", async (req, res) => {
         return res.json({ received: true });
       }
 
-      await pool.query("UPDATE users SET is_paid = true WHERE id = $1", [
+      await pool.query("UPDATE users SET is_paid = true, subscription_status = 'active' WHERE id = $1", [
         userId,
       ]);
 
@@ -116,7 +116,7 @@ router.post("/", async (req, res) => {
 
       if (!userId) return res.json({ received: true });
 
-      await pool.query("UPDATE users SET is_paid = false WHERE id = $1", [
+      await pool.query("UPDATE users SET is_paid = false, subscription_status = 'inactive' WHERE id = $1", [
         userId,
       ]);
 
@@ -144,7 +144,7 @@ router.post("/", async (req, res) => {
         return res.json({ received: true });
       }
 
-      await pool.query("UPDATE users SET is_paid = false WHERE id = $1", [
+      await pool.query("UPDATE users SET is_paid = false, subscription_status = 'inactive' WHERE id = $1", [
         userId,
       ]);
 

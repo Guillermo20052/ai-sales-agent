@@ -1,5 +1,5 @@
 run = "npm start"
-modules = ["nodejs-22"]
+modules = ["nodejs-22", "postgresql-16"]
 
 [[ports]]
 localPort = 5000
@@ -10,6 +10,7 @@ expertMode = true
 
 [nix]
 packages = ["psmisc"]
+channel = "stable-25_05"
 
 [workflows]
 runButton = "Project"

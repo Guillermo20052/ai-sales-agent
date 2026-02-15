@@ -157,7 +157,7 @@
       <div class="login-card">
         <div class="error-msg" id="errorMsg"></div>
 
-        <form id="loginForm">
+        <form id="loginForm" autocomplete="on">
           <div class="form-group">
             <label class="form-label" for="email">Email Address</label>
             <input class="form-input" type="email" id="email" placeholder="you@company.com" required />
@@ -170,6 +170,10 @@
 
           <button class="btn-login" type="submit" id="loginBtn">Sign In</button>
         </form>
+      </div>
+
+      <div style="text-align:center;margin-top:24px;font-size:14px;color:rgba(255,255,255,0.4);">
+        Don't have an account? <a href="/signup" style="color:#818cf8;text-decoration:none;font-weight:600;">Sign up</a>
       </div>
     </div>
 
@@ -198,7 +202,7 @@
             const data = await res.json();
 
             if (data.user) {
-              window.location.href = "/dashboard/install";
+              window.location.href = data.redirect || "/dashboard";
             } else {
               errorEl.textContent = data.error || "Login failed. Please try again.";
               errorEl.style.display = "block";

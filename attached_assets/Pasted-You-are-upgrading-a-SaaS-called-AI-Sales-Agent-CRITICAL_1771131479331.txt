@@ -1,0 +1,89 @@
+You are upgrading a SaaS called "AI Sales Agent".
+
+CRITICAL:
+Do NOT break existing backend routes.
+Do NOT modify Stripe webhook logic.
+Do NOT change route names.
+Do NOT break session authentication.
+Do NOT change server.js port setup.
+Do NOT remove express-session.
+Do NOT modify existing database tables except to ADD new columns.
+
+---------------------------------------
+GOAL: Implement Full SaaS Signup Flow
+---------------------------------------
+
+1. Create a proper /signup page:
+Fields:
+- Business Name
+- Email
+- Password
+- Accept Terms (required checkbox)
+
+2. When user signs up:
+- Create user
+- Set:
+    email_verified = false
+    subscription_status = 'inactive'
+    terms_accepted = true
+- Generate verification token (UUID or secure random)
+- Store verification_token in database
+
+3. Email Verification:
+- Create route: /verify?token=...
+- When clicked:
+    - Set email_verified = true
+    - Clear verification_token
+    - Redirect to /checkout page
+
+4. Checkout Page:
+- Only allow if email_verified = true
+- Button: "Activate Subscription"
+- Connect to existing Stripe checkout logic
+
+5. After successful payment:
+- Webhook sets subscription_status = 'active'
+
+6. Protect Dashboard:
+- If email_verified = false → redirect to verify page
+- If subscription_status != 'active' → redirect to checkout
+
+7. Add Terms & Conditions page:
+- /terms
+- Basic placeholder legal text
+
+8. Add Privacy Policy page:
+- /privacy
+- Basic placeholder legal text
+
+9. Improve login flow:
+- If inactive subscription → redirect to checkout
+- If not verified → redirect to verification page
+
+10. Use Nodemailer to send verification email:
+- Simple HTML template
+- Verification link
+
+11. Keep database schema intact except adding:
+    email_verified
+    verification_token
+    subscription_status
+    terms_accepted
+
+12. Keep file structure intact.
+
+---------------------------------------
+FINAL RESULT:
+---------------------------------------
+
+User journey:
+
+Landing → Signup → Verify Email → Pay → Dashboard → Install Widget
+
+Make it clean.
+Make it production-ready.
+Do NOT break Stripe.
+Do NOT break lead capture.
+Do NOT break existing routes.
+
+Explain files modified before changes.

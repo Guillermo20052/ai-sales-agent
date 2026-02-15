@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up - AI Sales Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #0f1117;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .signup-wrapper { width: 100%; max-width: 460px; }
+      .signup-brand { text-align: center; margin-bottom: 36px; }
+      .signup-logo {
+        width: 52px; height: 52px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border-radius: 14px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 22px; font-weight: 800; color: white;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 30px rgba(99, 102, 241, 0.3);
+      }
+      .signup-brand h1 { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 6px; }
+      .signup-brand p { font-size: 14px; color: rgba(255, 255, 255, 0.4); }
+      .signup-card {
+        background: #161822;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        padding: 36px;
+      }
+      .form-group { margin-bottom: 20px; }
+      .form-label { display: block; font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.6); margin-bottom: 8px; }
+      .form-input {
+        width: 100%; padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px; color: #fff; font-size: 14px;
+        font-family: 'Inter', sans-serif;
+        transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+      }
+      .form-input::placeholder { color: rgba(255, 255, 255, 0.25); }
+      .form-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
+      .terms-group {
+        display: flex; align-items: flex-start; gap: 10px;
+        margin-bottom: 24px; margin-top: 4px;
+      }
+      .terms-group input[type="checkbox"] {
+        width: 18px; height: 18px; margin-top: 2px;
+        accent-color: #6366f1; cursor: pointer; flex-shrink: 0;
+      }
+      .terms-group label {
+        font-size: 13px; color: rgba(255, 255, 255, 0.5); line-height: 1.5; cursor: pointer;
+      }
+      .terms-group a { color: #818cf8; text-decoration: underline; }
+      .terms-group a:hover { color: #a5b4fc; }
+      .btn-signup {
+        width: 100%; padding: 13px 24px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff; font-size: 14px; font-weight: 700;
+        border: none; border-radius: 10px; cursor: pointer;
+        font-family: 'Inter', sans-serif; transition: all 0.2s;
+      }
+      .btn-signup:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.35); }
+      .btn-signup:active { transform: translateY(0); }
+      .btn-signup:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+      .error-msg {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #f87171; padding: 12px 16px; border-radius: 10px;
+        font-size: 13px; font-weight: 500; margin-bottom: 20px; display: none;
+      }
+      .success-msg {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        color: #34d399; padding: 12px 16px; border-radius: 10px;
+        font-size: 13px; font-weight: 500; margin-bottom: 20px; display: none;
+      }
+      .login-link {
+        text-align: center; margin-top: 24px;
+        font-size: 14px; color: rgba(255, 255, 255, 0.4);
+      }
+      .login-link a { color: #818cf8; text-decoration: none; font-weight: 600; }
+      .login-link a:hover { color: #a5b4fc; text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <div class="signup-wrapper">
+      <div class="signup-brand">
+        <div class="signup-logo">AI</div>
+        <h1>Create Your Account</h1>
+        <p>Start converting visitors into paying clients</p>
+      </div>
+
+      <div class="signup-card">
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="success-msg" id="successMsg"></div>
+
+        <form id="signupForm">
+          <div class="form-group">
+            <label class="form-label" for="businessName">Business Name</label>
+            <input class="form-input" type="text" id="businessName" placeholder="Your Business Name" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address</label>
+            <input class="form-input" type="email" id="email" placeholder="you@company.com" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <input class="form-input" type="password" id="password" placeholder="Create a strong password" required minlength="8" />
+          </div>
+
+          <div class="terms-group">
+            <input type="checkbox" id="terms" required />
+            <label for="terms">I agree to the <a href="/terms" target="_blank">Terms & Conditions</a> and <a href="/privacy" target="_blank">Privacy Policy</a></label>
+          </div>
+
+          <button class="btn-signup" type="submit" id="signupBtn">Create Account</button>
+        </form>
+      </div>
+
+      <div class="login-link">
+        Already have an account? <a href="/login.html">Sign in</a>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById("signupForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById("signupBtn");
+        const errorEl = document.getElementById("errorMsg");
+        const successEl = document.getElementById("successMsg");
+        errorEl.style.display = "none";
+        successEl.style.display = "none";
+        btn.disabled = true;
+        btn.textContent = "Creating account...";
+
+        try {
+          const res = await fetch("/auth/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              businessName: document.getElementById("businessName").value,
+              email: document.getElementById("email").value,
+              password: document.getElementById("password").value,
+              termsAccepted: document.getElementById("terms").checked,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            successEl.textContent = data.message || "Account created! Check your email to verify.";
+            successEl.style.display = "block";
+            document.getElementById("signupForm").style.display = "none";
+            setTimeout(() => { window.location.href = "/verify-pending"; }, 2000);
+          } else {
+            errorEl.textContent = data.error || "Signup failed. Please try again.";
+            errorEl.style.display = "block";
+            btn.disabled = false;
+            btn.textContent = "Create Account";
+          }
+        } catch (err) {
+          errorEl.textContent = "Connection error. Please try again.";
+          errorEl.style.display = "block";
+          btn.disabled = false;
+          btn.textContent = "Create Account";
+        }
+      });
+    </script>
+  </body>
+</html>

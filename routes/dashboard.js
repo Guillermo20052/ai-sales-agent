@@ -15,6 +15,27 @@ router.get("/", authMiddleware, async (req, res) => {
   try {
     const userId = req.session.userId;
 
+    const userResult = await pool.query(
+      "SELECT is_paid, email_verified, subscription_status FROM users WHERE id = $1",
+      [userId],
+    );
+
+    if (!userResult.rows.length) {
+      return res.redirect("/login.html");
+    }
+
+    const user = userResult.rows[0];
+
+    if (!user.email_verified) {
+      return res.redirect("/verify-pending");
+    }
+
+    if (user.subscription_status !== "active" && !user.is_paid) {
+      return res.redirect("/checkout");
+    }
+
+    const isPaid = user.is_paid;
+
     const result = await pool.query(
       "SELECT * FROM business_profiles WHERE user_id = $1",
       [userId],
@@ -25,13 +46,6 @@ router.get("/", authMiddleware, async (req, res) => {
     if (!business) {
       return res.status(400).send("No business profile found.");
     }
-
-    const userResult = await pool.query(
-      "SELECT is_paid FROM users WHERE id = $1",
-      [userId],
-    );
-
-    const isPaid = userResult.rows[0]?.is_paid;
 
     let html = fs.readFileSync("./views/dashboard.html", "utf8");
 
@@ -115,7 +129,27 @@ router.get("/install", authMiddleware, async (req, res) => {
   try {
     const userId = req.session.userId;
 
-    // Get business profile
+    const userResult = await pool.query(
+      "SELECT is_paid, email_verified, subscription_status FROM users WHERE id = $1",
+      [userId],
+    );
+
+    if (!userResult.rows.length) {
+      return res.redirect("/login.html");
+    }
+
+    const user = userResult.rows[0];
+
+    if (!user.email_verified) {
+      return res.redirect("/verify-pending");
+    }
+
+    if (user.subscription_status !== "active" && !user.is_paid) {
+      return res.redirect("/checkout");
+    }
+
+    const isPaid = user.is_paid;
+
     const result = await pool.query(
       "SELECT * FROM business_profiles WHERE user_id = $1",
       [userId],
@@ -126,14 +160,6 @@ router.get("/install", authMiddleware, async (req, res) => {
     if (!business) {
       return res.status(400).send("No business profile found.");
     }
-
-    // Get subscription status
-    const userResult = await pool.query(
-      "SELECT is_paid FROM users WHERE id = $1",
-      [userId],
-    );
-
-    const isPaid = userResult.rows[0]?.is_paid;
 
     const baseUrl = process.env.BASE_URL;
 

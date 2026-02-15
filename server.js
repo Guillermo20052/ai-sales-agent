@@ -45,6 +45,93 @@ app.use("/dashboard", require("./routes/dashboard"));
 app.use("/agent", require("./routes/agent"));
 app.use("/b", require("./routes/publicBusiness"));
 
+/* ========= SIGNUP PAGE ========= */
+app.get("/signup", (req, res) => {
+  res.sendFile(__dirname + "/views/signup.html");
+});
+
+/* ========= EMAIL VERIFICATION ========= */
+const pool = require("./services/db");
+
+app.get("/verify", async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) {
+      return res.status(400).send("Invalid verification link.");
+    }
+
+    const result = await pool.query(
+      "SELECT id FROM users WHERE verification_token = $1",
+      [token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).send("Invalid or expired verification link.");
+    }
+
+    const userId = result.rows[0].id;
+
+    await pool.query(
+      "UPDATE users SET email_verified = true, verification_token = NULL WHERE id = $1",
+      [userId]
+    );
+
+    req.session.userId = userId;
+
+    res.redirect("/checkout");
+  } catch (err) {
+    console.error("VERIFY ERROR:", err);
+    res.status(500).send("Server error.");
+  }
+});
+
+/* ========= VERIFY PENDING PAGE ========= */
+app.get("/verify-pending", (req, res) => {
+  res.sendFile(__dirname + "/views/verify-pending.html");
+});
+
+/* ========= CHECKOUT PAGE ========= */
+app.get("/checkout", async (req, res) => {
+  try {
+    if (!req.session.userId) {
+      return res.redirect("/login.html");
+    }
+
+    const result = await pool.query(
+      "SELECT email_verified, subscription_status, is_paid FROM users WHERE id = $1",
+      [req.session.userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.redirect("/login.html");
+    }
+
+    const user = result.rows[0];
+
+    if (!user.email_verified) {
+      return res.redirect("/verify-pending");
+    }
+
+    if (user.subscription_status === "active" || user.is_paid) {
+      return res.redirect("/dashboard");
+    }
+
+    res.sendFile(__dirname + "/views/checkout.html");
+  } catch (err) {
+    console.error("CHECKOUT PAGE ERROR:", err);
+    res.status(500).send("Server error.");
+  }
+});
+
+/* ========= TERMS & PRIVACY ========= */
+app.get("/terms", (req, res) => {
+  res.sendFile(__dirname + "/views/terms.html");
+});
+
+app.get("/privacy", (req, res) => {
+  res.sendFile(__dirname + "/views/privacy.html");
+});
+
 /* ========= BACKWARD COMPAT — /home alias ========= */
 app.get("/home", (req, res) => {
   res.status(200).send(landingHtml);
