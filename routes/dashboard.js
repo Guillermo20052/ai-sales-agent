@@ -5,6 +5,8 @@ const { createCheckoutSession } = require("../services/stripeService");
 const fs = require("fs");
 const fetch = require("node-fetch");
 const cheerio = require("cheerio");
+const Stripe = require("stripe");
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const router = express.Router();
 
@@ -114,6 +116,20 @@ router.get("/", authMiddleware, async (req, res) => {
                      </div>
                    </div>
                  </div>
+               </div>
+             </div>`
+          : "",
+      )
+      .replace(
+        "{{refundSection}}",
+        isActive
+          ? `<div class="refund-section">
+               <div class="refund-card">
+                 <div class="refund-info">
+                   <h3>Subscription Management</h3>
+                   <p>Refunds are available within 7 days of subscription start. After that, your subscription continues until the end of the billing period.</p>
+                 </div>
+                 <button class="btn-refund" onclick="openRefundModal()">Request Refund</button>
                </div>
              </div>`
           : "",
@@ -508,6 +524,147 @@ router.get("/conversations/:id", authMiddleware, async (req, res) => {
     res.json({ conversation: conv.rows[0], messages: msgs.rows });
   } catch (err) {
     console.error("CONVERSATION DETAIL ERROR:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+/**
+ * =========================
+ * POST /dashboard/refund
+ * =========================
+ */
+router.post("/refund", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+
+    const existingRefund = await pool.query(
+      "SELECT id FROM refunds WHERE user_id = $1",
+      [userId]
+    );
+    if (existingRefund.rows.length > 0) {
+      return res.status(400).json({ error: "A refund has already been processed for this account." });
+    }
+
+    const userResult = await pool.query(
+      "SELECT subscription_status FROM users WHERE id = $1",
+      [userId]
+    );
+    if (!userResult.rows.length || userResult.rows[0].subscription_status !== "active") {
+      return res.status(400).json({ error: "No active subscription found." });
+    }
+
+    let subscription;
+    try {
+      const searchResult = await stripe.subscriptions.search({
+        query: `metadata['userId']:'${userId}'`,
+        limit: 1,
+      });
+
+      if (!searchResult.data.length) {
+        return res.status(400).json({ error: "Could not find your Stripe subscription. Please contact support." });
+      }
+
+      subscription = searchResult.data[0];
+    } catch (searchErr) {
+      console.error("REFUND: Stripe subscription search error:", searchErr.message);
+      return res.status(500).json({ error: "Could not verify subscription with payment provider." });
+    }
+
+    const subStartDate = new Date(subscription.start_date * 1000);
+    const now = new Date();
+    const daysSinceStart = (now - subStartDate) / (1000 * 60 * 60 * 24);
+
+    if (daysSinceStart > 7) {
+      const startFormatted = subStartDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      return res.status(400).json({
+        error: `Refund window has expired. Your subscription started on ${startFormatted}, and refunds are only available within 7 days of starting.`
+      });
+    }
+
+    let latestInvoice;
+    try {
+      if (typeof subscription.latest_invoice === "string") {
+        latestInvoice = await stripe.invoices.retrieve(subscription.latest_invoice);
+      } else {
+        latestInvoice = subscription.latest_invoice;
+      }
+
+      if (!latestInvoice || !latestInvoice.payment_intent) {
+        return res.status(400).json({ error: "Could not find the payment to refund. Please contact support." });
+      }
+    } catch (invErr) {
+      console.error("REFUND: Invoice retrieval error:", invErr.message);
+      return res.status(500).json({ error: "Could not retrieve payment details." });
+    }
+
+    let refund;
+    try {
+      refund = await stripe.refunds.create({
+        payment_intent: typeof latestInvoice.payment_intent === "string"
+          ? latestInvoice.payment_intent
+          : latestInvoice.payment_intent.id,
+        reason: "requested_by_customer",
+      });
+    } catch (refundErr) {
+      console.error("REFUND: Stripe refund creation error:", refundErr.message);
+      return res.status(500).json({ error: "Refund failed: " + refundErr.message });
+    }
+
+    try {
+      await stripe.subscriptions.cancel(subscription.id);
+    } catch (cancelErr) {
+      console.error("REFUND: Subscription cancellation error:", cancelErr.message);
+    }
+
+    await pool.query(
+      "UPDATE users SET subscription_status = 'refunded', is_paid = false WHERE id = $1",
+      [userId]
+    );
+
+    await pool.query(
+      `INSERT INTO refunds (user_id, stripe_refund_id, stripe_subscription_id, amount, currency, reason, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        userId,
+        refund.id,
+        subscription.id,
+        refund.amount,
+        refund.currency,
+        "requested_by_customer",
+        refund.status
+      ]
+    );
+
+    console.log("REFUND: Processed successfully for user:", userId, "Refund ID:", refund.id, "Amount:", refund.amount);
+
+    res.json({
+      success: true,
+      message: "Your refund has been processed. The amount will be returned to your original payment method within 5-10 business days.",
+      refundId: refund.id,
+      amount: (refund.amount / 100).toFixed(2),
+      currency: refund.currency.toUpperCase(),
+    });
+  } catch (err) {
+    console.error("REFUND ERROR:", err);
+    res.status(500).json({ error: "An unexpected error occurred. Please try again or contact support." });
+  }
+});
+
+/**
+ * =========================
+ * GET /dashboard/refund-status
+ * =========================
+ */
+router.get("/refund-status", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const result = await pool.query(
+      "SELECT * FROM refunds WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1",
+      [userId]
+    );
+    res.json({ refund: result.rows[0] || null });
+  } catch (err) {
+    console.error("REFUND STATUS ERROR:", err);
     res.status(500).json({ error: "Server error" });
   }
 });

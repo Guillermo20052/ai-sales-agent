@@ -129,7 +129,7 @@ router.post("/", async (req, res) => {
 
       if (!userId) return res.json({ received: true });
 
-      await pool.query("UPDATE users SET is_paid = false, subscription_status = 'inactive' WHERE id = $1", [
+      await pool.query("UPDATE users SET is_paid = false, subscription_status = 'inactive' WHERE id = $1 AND subscription_status != 'refunded'", [
         userId,
       ]);
 
@@ -157,7 +157,7 @@ router.post("/", async (req, res) => {
         return res.json({ received: true });
       }
 
-      await pool.query("UPDATE users SET is_paid = false, subscription_status = 'inactive' WHERE id = $1", [
+      await pool.query("UPDATE users SET is_paid = false, subscription_status = 'inactive' WHERE id = $1 AND subscription_status != 'refunded'", [
         userId,
       ]);
 
