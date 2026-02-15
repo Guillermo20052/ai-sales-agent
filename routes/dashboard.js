@@ -97,8 +97,12 @@ router.get("/install", authMiddleware, async (req, res) => {
         "{{upgradeButton}}",
         isPaid
           ? ""
-          : `<div class="section">
-               <button class="upgrade" onclick="window.location='/dashboard/checkout'">
+          : `<div class="upgrade-card">
+               <div class="upgrade-info">
+                 <h3>Unlock Unlimited Access</h3>
+                 <p>Remove message limits and get priority support with a Pro subscription.</p>
+               </div>
+               <button class="btn-upgrade" onclick="window.location='/dashboard/checkout'">
                  Upgrade Now
                </button>
              </div>`,
