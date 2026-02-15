@@ -2,11 +2,20 @@ require("dotenv").config();
 
 const express = require("express");
 const session = require("express-session");
+const cors = require("cors");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+/* ========= STRIPE WEBHOOK (MUST BE FIRST & RAW) ========= */
+app.use(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  require("./routes/webhook"),
+);
+
+/* ========= MIDDLEWARE ========= */
+app.use(cors()); // Allow cross-origin requests (for widget dev)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -15,25 +24,40 @@ app.use(
     secret: process.env.SESSION_SECRET || "devsecret",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false },
+    cookie: { secure: false }, // set true when using HTTPS only
   }),
 );
 
-// ROUTES
-const authRoutes = require("./routes/auth");
-const chatRoutes = require("./routes/chat");
-const dashboardRoutes = require("./routes/dashboard");
+/* ========= STATIC FILES ========= */
+/* Allows serving:
+   https://your-url/widget.js
+   https://your-url/demo.html
+*/
+app.use(express.static("public"));
 
-app.use("/auth", authRoutes);
-app.use("/chat", chatRoutes);
-app.use("/dashboard", dashboardRoutes);
+/* ========= ROUTES ========= */
+app.use("/auth", require("./routes/auth"));
+app.use("/chat", require("./routes/chat"));
+app.use("/dashboard", require("./routes/dashboard"));
+app.use("/agent", require("./routes/agent"));
+app.use("/dashboard/install", require("./routes/install"));
+app.use("/b", require("./routes/publicBusiness"));
 
-// Health check
+/* ========= HEALTH CHECK ========= */
 app.get("/", (req, res) => {
-  res.send("Sales Agent SaaS backend is running 🚀");
+  res.send("🚀 Sales Agent SaaS backend is running");
 });
 
-// Start server
+/* ========= STRIPE SUCCESS / CANCEL PAGES ========= */
+app.get("/success", (req, res) => {
+  res.send("✅ Payment successful! Subscription activated.");
+});
+
+app.get("/cancel", (req, res) => {
+  res.send("❌ Payment cancelled.");
+});
+
+/* ========= START SERVER ========= */
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });

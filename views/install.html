@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+  <head>
+    <title>AI Sales Agent Install</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f7fa;
+        padding: 40px;
+      }
+
+      .card {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        max-width: 900px;
+        margin: auto;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      }
+
+      h1 {
+        margin-bottom: 10px;
+      }
+
+      .status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        display: inline-block;
+        margin-bottom: 20px;
+      }
+
+      .active {
+        background: #e6f9f0;
+        color: #0f9d58;
+      }
+
+      .inactive {
+        background: #fdecea;
+        color: #d93025;
+      }
+
+      .highlight-box {
+        background: linear-gradient(135deg, #1976d2, #0d47a1);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 20px;
+      }
+
+      .highlight-box h3 {
+        margin-top: 0;
+      }
+
+      .big-link {
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 10px;
+        word-break: break-all;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 10px;
+        border-radius: 6px;
+      }
+
+      .box {
+        background: #f1f3f4;
+        padding: 15px;
+        border-radius: 8px;
+        font-family: monospace;
+        word-break: break-all;
+      }
+
+      button {
+        margin-top: 10px;
+        padding: 8px 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #1976d2;
+        color: white;
+      }
+
+      .section {
+        margin-top: 30px;
+      }
+
+      .upgrade {
+        background: #d93025;
+      }
+
+      ul {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>{{businessName}}</h1>
+
+      <div class="status {{statusClass}}">{{statusText}}</div>
+
+      <!-- 🔥 FASTEST SETUP SECTION -->
+      <div class="highlight-box">
+        <h3>🔥 Fastest Setup (No Website Changes Required)</h3>
+        <p>Just copy this link and add it to:</p>
+        <ul>
+          <li>Instagram bio</li>
+          <li>Facebook page</li>
+          <li>Google Business profile</li>
+          <li>Email signature</li>
+          <li>WhatsApp auto reply</li>
+        </ul>
+
+        <div class="big-link" id="hostedLink">{{hostedPage}}</div>
+
+        <button onclick="copy('hostedLink')">Copy Link</button>
+      </div>
+
+      <!-- EMBED OPTION -->
+      <div class="section">
+        <h3>Embed on Your Website (Advanced)</h3>
+        <div class="box" id="embedCode">{{embedCode}}</div>
+        <button onclick="copy('embedCode')">Copy Code</button>
+      </div>
+
+      <div class="section">
+        <h3>Platform Instructions</h3>
+        <ul>
+          <li>
+            <strong>Shopify:</strong> Online Store → Themes → Edit Code → paste
+            before &lt;/body&gt;
+          </li>
+          <li>
+            <strong>WordPress:</strong> Appearance → Theme Editor → footer.php
+          </li>
+          <li><strong>Wix:</strong> Settings → Custom Code → Add Script</li>
+          <li>
+            <strong>Webflow:</strong> Site Settings → Custom Code → Footer
+          </li>
+        </ul>
+      </div>
+
+      {{upgradeButton}}
+    </div>
+
+    <script>
+      function copy(id) {
+        const text = document.getElementById(id).innerText;
+        navigator.clipboard.writeText(text);
+        alert("Copied!");
+      }
+    </script>
+  </body>
+</html>
