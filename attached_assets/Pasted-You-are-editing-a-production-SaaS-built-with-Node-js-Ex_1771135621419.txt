@@ -1,0 +1,126 @@
+You are editing a production SaaS built with:
+
+- Node.js
+- Express
+- PostgreSQL
+- Stripe
+- express-session
+
+DO NOT break:
+- Stripe webhook
+- Subscription logic
+- Email verification
+- Agent route
+- Database schema
+
+--------------------------------------------
+GOAL
+--------------------------------------------
+
+Improve post-payment experience and login redirects.
+
+--------------------------------------------
+1️⃣ AFTER STRIPE PAYMENT
+--------------------------------------------
+
+In stripeService.js ensure:
+
+success_url: `${process.env.BASE_URL}/install-success`
+cancel_url: `${process.env.BASE_URL}/cancel`
+
+--------------------------------------------
+2️⃣ CREATE ROUTE: GET /install-success
+--------------------------------------------
+
+Requirements:
+
+- Must require session (user logged in)
+- Must verify subscription_status = 'active'
+- Must generate:
+    - Hosted AI link: `${BASE_URL}/b/${businessId}`
+    - Embed script tag
+    - Platform instructions (Shopify, WordPress, Wix, Webflow)
+    - "Fastest Setup" section (Instagram, Google Business, WhatsApp)
+
+Design:
+
+- Premium SaaS UI
+- Dark gradient hero section
+- Big headline: 🎉 Your AI Sales Agent Is LIVE
+- Large highlighted box with hosted link
+- Copy button
+- Embed code box
+- Step-by-step platform options in clean cards
+- Status badge: 🟢 Active Subscription
+
+Behavior:
+
+- Show page for 3 seconds
+- After 3 seconds automatically redirect to:
+  /dashboard
+
+Use:
+
+setTimeout(() => {
+  window.location.href = "/dashboard";
+}, 3000);
+
+--------------------------------------------
+3️⃣ LOGIN REDIRECT LOGIC
+--------------------------------------------
+
+In /auth/login route:
+
+If:
+- email_verified = true
+- subscription_status = 'active'
+
+Redirect to:
+"/dashboard"
+
+If:
+- verified but not paid → "/checkout"
+
+If:
+- not verified → "/verify-pending"
+
+--------------------------------------------
+4️⃣ IMPROVE DASHBOARD
+--------------------------------------------
+
+When subscription is active:
+
+Show:
+- 🟢 Active badge
+- Hosted link prominently
+- Embed code
+- Leads summary
+- Quick "Copy Install Link" button
+
+When inactive:
+
+Show:
+- 🔴 Subscription inactive
+- Upgrade button
+
+--------------------------------------------
+5️⃣ DO NOT REMOVE HEALTH CHECK
+--------------------------------------------
+
+Keep:
+
+app.get("/", (req, res) => {
+  res.status(200).send("OK");
+});
+
+--------------------------------------------
+6️⃣ FINAL RESULT MUST:
+
+- Not break deployment
+- Not break webhook
+- Not break login
+- Not break signup
+- Not break agent route
+- Improve UX only
+
+Return final modified files clearly separated.

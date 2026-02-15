@@ -20,7 +20,7 @@ async function createCheckoutSession(userId) {
         userId: userId,
       },
     },
-    success_url: `${process.env.BASE_URL}/payment-success`,
+    success_url: `${process.env.BASE_URL}/install-success`,
     cancel_url: `${process.env.BASE_URL}/cancel`,
   });
 

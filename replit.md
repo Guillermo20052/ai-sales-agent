@@ -34,7 +34,8 @@ Landing -> Signup -> Verify Email -> Checkout (Stripe) -> Dashboard -> Install W
 |---|---|---|
 | `/` | `server.js` | Landing page + health check (returns 200, no DB calls) |
 | `/health` | `server.js` | Dedicated health check endpoint (instant 200, no DB) |
-| `/payment-success` | `server.js` | Post-payment success page with business info + auto-redirect |
+| `/install-success` | `server.js` | Post-payment success page with business info, hosted link, embed code + 3s auto-redirect to dashboard |
+| `/payment-success` | `server.js` | Backward compat redirect to /install-success |
 | `/home` | `server.js` | Alias for landing page (backward compat) |
 | `/signup` | `server.js` | Signup page (views/signup.html) |
 | `/verify` | `server.js` | Email verification (GET /verify?token=...) |
