@@ -1,0 +1,189 @@
+I need to upgrade my SaaS to include a Business Knowledge System per customer.
+
+Currently the AI agent responds generically because it does not have structured business data.
+
+I need the following implemented:
+
+1️⃣ Add New Dashboard Tab: "AI Training"
+
+Route: /dashboard/training
+
+This page must allow the business owner to input:
+
+Business Description (textarea)
+
+Services Offered (textarea)
+
+Pricing Details (textarea)
+
+FAQs (textarea)
+
+Tone of Voice (dropdown: Professional / Friendly / Aggressive Sales / Luxury)
+
+Website URL (input)
+
+Instagram URL (input)
+
+Facebook URL (input)
+
+What the AI should NEVER say (textarea)
+
+Save this to a new table:
+
+business_knowledge
+
+id
+
+user_id
+
+description
+
+services
+
+pricing
+
+faqs
+
+tone
+
+website_url
+
+instagram_url
+
+facebook_url
+
+restrictions
+
+updated_at
+
+2️⃣ Modify AI Prompt System
+
+When generating AI responses in /routes/agent.js:
+
+Before calling OpenAI, fetch business_knowledge for that user.
+
+Construct a dynamic system prompt like:
+
+"You are an AI sales assistant for [Business Name].
+
+Here is the official business information:
+
+Business Description:
+{description}
+
+Services:
+{services}
+
+Pricing:
+{pricing}
+
+FAQs:
+{faqs}
+
+Tone:
+{tone}
+
+You MUST:
+
+Only answer using the above business information.
+
+Never invent services.
+
+Never create fake pricing.
+
+If you do not know something, say: 'I don’t have that information yet. Let me connect you with the team.'
+
+Never talk about topics unrelated to this business."
+
+Then pass this as the system message to OpenAI.
+
+3️⃣ Website Scraping Feature
+
+When user inputs a website URL:
+
+Create a route:
+POST /dashboard/scrape
+
+This should:
+
+Fetch the website HTML
+
+Extract visible text (remove scripts and styles)
+
+Store summarized content into business_knowledge.description
+
+Use node-fetch + cheerio.
+
+4️⃣ Chat History Storage
+
+Create new tables:
+
+conversations
+
+id
+
+business_id
+
+created_at
+
+messages
+
+id
+
+conversation_id
+
+sender (user or ai)
+
+content
+
+created_at
+
+Modify agent route so:
+
+Every user message gets saved
+
+Every AI response gets saved
+
+Display last 10 conversations in dashboard.
+
+5️⃣ Strict Business Guardrail
+
+Modify AI logic so if user asks:
+
+"Tell me about NASA"
+"What's the weather"
+"Who won the Super Bowl"
+
+The AI responds:
+
+"I’m here to assist with questions related to [Business Name]. How can I help you with our services?"
+
+6️⃣ Make UI Premium
+
+AI Training page must:
+
+Use same dark premium theme
+
+Show "Last Updated"
+
+Show Save Success animation
+
+Show "Agent Knowledge Status: Trained"
+
+7️⃣ Final Goal
+
+Each paying business has:
+
+Their own knowledge base
+
+Their own trained AI
+
+Their own hosted AI page
+
+Their own dashboard
+
+Their own chat history
+
+Their own analytics
+
+The AI must never give generic answers again.

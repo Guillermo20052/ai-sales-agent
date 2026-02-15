@@ -2,9 +2,9 @@
 
 ## Overview
 
-AI Sales Agent SaaS application with a modern dark-themed dashboard UI. Provides user authentication with email verification, AI-powered chat via OpenAI, lead capture, Stripe subscription billing, and an embeddable chat widget for businesses.
+AI Sales Agent SaaS application with a modern dark-themed dashboard UI. Provides user authentication with email verification, AI-powered chat via OpenAI, lead capture, Stripe subscription billing, an embeddable chat widget, and a per-business AI training/knowledge system.
 
-Built with Node.js/Express, PostgreSQL, Stripe, OpenAI, and Nodemailer.
+Built with Node.js/Express, PostgreSQL, Stripe, OpenAI, Nodemailer, and Cheerio.
 
 ## User Preferences
 
@@ -13,10 +13,11 @@ UI preference: Modern dark SaaS aesthetic, premium feel ($50/month tier look).
 
 ## Recent Changes
 
+- **Feb 15, 2026**: Added Business Knowledge System: AI Training page (/dashboard/training), website scraping (/dashboard/scrape), chat history with conversations/messages tables, conversations viewer (/dashboard/conversations), dynamic AI prompts with business knowledge + guardrails, per-business isolation. New tables: business_knowledge, conversations, messages. New deps: cheerio, node-fetch@2.
 - **Feb 15, 2026**: Fixed subscription flow race condition. /install-success now verifies Stripe session_id before activating. All subscription checks use subscription_status only (removed is_paid from conditionals). Added customer.subscription.created webhook handler. Added /logout route and logout button to dashboard. Added Cache-Control headers.
 - **Feb 15, 2026**: Fixed Stripe success_url/cancel_url to use BASE_URL (was hardcoded to dev URL). Added /health endpoint. Created /payment-success page with business info, hosted link, embed code, and auto-redirect. Upgraded dashboard to show agent section with hosted link, embed code, copy buttons, and platform install guides for active subscribers.
-- **Feb 15, 2026**: Implemented full SaaS signup flow: signup page, email verification (Nodemailer), checkout page, dashboard protection (email_verified + subscription_status), terms & privacy pages. Added columns to users table: email_verified, verification_token, subscription_status, terms_accepted. Webhook syncs subscription_status alongside is_paid. Login now redirects based on user state.
-- **Feb 15, 2026**: Added professional SaaS landing page at "/", dashboard page at "/dashboard" with leads table and stats, improved success/cancel pages with dark theme. Added navigation between dashboard pages. All existing routes preserved including /home backward compat.
+- **Feb 15, 2026**: Implemented full SaaS signup flow: signup page, email verification (Nodemailer), checkout page, dashboard protection (email_verified + subscription_status), terms & privacy pages.
+- **Feb 15, 2026**: Added professional SaaS landing page at "/", dashboard page at "/dashboard" with leads table and stats, improved success/cancel pages with dark theme.
 - **Feb 15, 2026**: Complete UI redesign of `/dashboard/install` page and `/login.html` page. Dark theme with Inter font, gradient hero card, modern cards with soft shadows, responsive layout, toast notifications.
 
 ## System Architecture
@@ -28,14 +29,14 @@ UI preference: Modern dark SaaS aesthetic, premium feel ($50/month tier look).
 - Middleware in `middleware/` directory.
 
 ### User Journey
-Landing -> Signup -> Verify Email -> Checkout (Stripe) -> Dashboard -> Install Widget
+Landing -> Signup -> Verify Email -> Checkout (Stripe) -> Dashboard -> Train AI -> Install Widget
 
 ### Route Structure
 | Route Prefix | File | Purpose |
 |---|---|---|
 | `/` | `server.js` | Landing page + health check (returns 200, no DB calls) |
 | `/health` | `server.js` | Dedicated health check endpoint (instant 200, no DB) |
-| `/install-success` | `server.js` | Post-payment success page with business info, hosted link, embed code + 3s auto-redirect to dashboard |
+| `/install-success` | `server.js` | Post-payment success page with Stripe session verification |
 | `/payment-success` | `server.js` | Backward compat redirect to /install-success |
 | `/home` | `server.js` | Alias for landing page (backward compat) |
 | `/signup` | `server.js` | Signup page (views/signup.html) |
@@ -46,13 +47,25 @@ Landing -> Signup -> Verify Email -> Checkout (Stripe) -> Dashboard -> Install W
 | `/privacy` | `server.js` | Privacy Policy page |
 | `/auth` | `routes/auth.js` | Login, signup, resend-verification endpoints |
 | `/chat` | `routes/chat.js` | AI chat with auth + usage limits |
-| `/dashboard` | `routes/dashboard.js` | Dashboard page, leads API, checkout, install page |
-| `/dashboard/install` | `routes/install.js` | Install JSON API |
-| `/agent` | `routes/agent.js` | Public AI agent endpoint |
+| `/dashboard` | `routes/dashboard.js` | Dashboard page, leads, checkout, install, training, conversations, scrape |
+| `/agent` | `routes/agent.js` | Public AI agent endpoint (with knowledge + chat history) |
 | `/b` | `routes/publicBusiness.js` | Public business page |
 | `/webhook` | `routes/webhook.js` | Stripe webhook handler |
 | `/success` | `server.js` | Stripe payment success page |
 | `/cancel` | `server.js` | Stripe payment cancel page |
+
+### Dashboard Routes
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/dashboard` | GET | Main dashboard with leads table + AI agent section |
+| `/dashboard/leads` | GET | Leads API (JSON) |
+| `/dashboard/checkout` | POST | Create Stripe checkout session |
+| `/dashboard/install` | GET | Install page with embed code |
+| `/dashboard/training` | GET | AI Training page (business knowledge form) |
+| `/dashboard/training` | POST | Save business knowledge data |
+| `/dashboard/scrape` | POST | Scrape website URL and return text content |
+| `/dashboard/conversations` | GET | Conversations viewer page (last 10) |
+| `/dashboard/conversations/:id` | GET | Single conversation messages (JSON) |
 
 ### Auth Endpoints
 | Endpoint | Method | Purpose |
@@ -69,28 +82,55 @@ Landing -> Signup -> Verify Email -> Checkout (Stripe) -> Dashboard -> Install W
 - `views/checkout.html` - Stripe checkout page (only if email_verified)
 - `views/terms.html` - Terms & Conditions page
 - `views/privacy.html` - Privacy Policy page
-- `views/dashboard.html` - Dashboard with leads table, stats cards, status badges
+- `views/dashboard.html` - Dashboard with leads table, stats cards, AI agent section
 - `views/install.html` - Dashboard install page (server-rendered with template variables)
+- `views/training.html` - AI Training page (business knowledge form, scrape button, status badge)
+- `views/conversations.html` - Conversations viewer with modal message detail
 - `public/login.html` - Login page (redirects based on user state)
 - `public/demo.html` - Widget demo page
 - `public/widget.js` - Embeddable chat widget
-- Template variables in install.html: `{{businessName}}`, `{{hostedPage}}`, `{{embedCode}}`, `{{statusText}}`, `{{statusClass}}`, `{{upgradeButton}}`
-- Template variables in dashboard.html: `{{businessName}}`, `{{statusText}}`, `{{statusClass}}`, `{{upgradeButton}}`
+- Dashboard navigation tabs: Leads | AI Training | Conversations | Install
+
+### AI System
+- `services/openaiService.js` - generateSalesReply(businessProfile, message, knowledge)
+- When business_knowledge exists, builds dynamic system prompt with:
+  - Business description, services, pricing, FAQs, tone
+  - Strict guardrails: no inventing services/pricing, no off-topic answers
+  - Business-specific restrictions (things AI must never say)
+- Falls back to basic prompt using business_profiles data if no knowledge exists
+- Off-topic requests get redirected: "I'm here to assist with questions related to [Business Name]"
+
+### Chat History
+- Every user message and AI response saved to `messages` table
+- Conversations grouped by `conversations` table (linked to business_id)
+- `visitor_id` optional field for tracking anonymous visitors
+- Agent returns `conversationId` for multi-turn conversations
+- Dashboard shows last 10 conversations with message count and preview
+
+### Website Scraping
+- POST /dashboard/scrape accepts a URL
+- Uses node-fetch + cheerio to extract visible text
+- Strips scripts, styles, nav, footer, header, iframe, svg
+- Limits extracted text to 5000 characters
+- SSRF protection: blocks localhost, private IPs, non-HTTP protocols
+- 10-second timeout
 
 ### Authentication & Authorization
 - Login via `POST /auth/login` using **bcrypt** password comparison.
 - Signup via `POST /auth/signup` creates user + business_profile.
 - Sessions managed with **express-session**.
 - Auth middleware in `middleware/authMiddleware.js`.
-- Dashboard protection: requires email_verified=true AND (subscription_status='active' OR is_paid=true)
+- Dashboard protection: requires email_verified=true AND subscription_status='active'
 - Login redirects: unverified -> /verify-pending, inactive subscription -> /checkout, active -> /dashboard
 
 ### Database
 - **PostgreSQL** via the `pg` library with a connection pool (`services/db.js`).
 - Connection string from `DATABASE_URL` environment variable.
-- Tables: `users`, `business_profiles`, `leads`
+- Tables: `users`, `business_profiles`, `leads`, `business_knowledge`, `conversations`, `messages`
 
-### Users Table Columns
+### Database Tables
+
+#### users
 | Column | Type | Default | Purpose |
 |---|---|---|---|
 | id | serial | auto | Primary key |
@@ -104,6 +144,39 @@ Landing -> Signup -> Verify Email -> Checkout (Stripe) -> Dashboard -> Install W
 | verification_token | text | null | UUID token for email verification |
 | subscription_status | text | 'inactive' | Subscription status (active/inactive) |
 | terms_accepted | boolean | false | Terms acceptance |
+
+#### business_knowledge
+| Column | Type | Default | Purpose |
+|---|---|---|---|
+| id | serial | auto | Primary key |
+| user_id | integer | - | FK to users.id |
+| description | text | '' | Business description |
+| services | text | '' | Services offered |
+| pricing | text | '' | Pricing details |
+| faqs | text | '' | FAQs |
+| tone | varchar(50) | 'Professional' | AI tone (Professional/Friendly/Aggressive Sales/Luxury) |
+| website_url | text | '' | Website URL |
+| instagram_url | text | '' | Instagram URL |
+| facebook_url | text | '' | Facebook URL |
+| restrictions | text | '' | What AI should never say |
+| updated_at | timestamp | CURRENT_TIMESTAMP | Last update time |
+
+#### conversations
+| Column | Type | Default | Purpose |
+|---|---|---|---|
+| id | serial | auto | Primary key |
+| business_id | integer | - | FK to business_profiles.id |
+| visitor_id | varchar(64) | null | Anonymous visitor tracking |
+| created_at | timestamp | CURRENT_TIMESTAMP | Conversation start time |
+
+#### messages
+| Column | Type | Default | Purpose |
+|---|---|---|---|
+| id | serial | auto | Primary key |
+| conversation_id | integer | - | FK to conversations.id |
+| sender | varchar(10) | - | 'user' or 'ai' |
+| content | text | - | Message content |
+| created_at | timestamp | CURRENT_TIMESTAMP | Message time |
 
 ### Environment Variables
 | Variable | Purpose | Required |
@@ -124,7 +197,7 @@ Landing -> Signup -> Verify Email -> Checkout (Stripe) -> Dashboard -> Install W
 
 ### Project Structure
 ```
-├── server.js              # Entry point, middleware, route mounting, new page routes
+├── server.js              # Entry point, middleware, route mounting, page routes
 ├── package.json           # Dependencies
 ├── views/
 │   ├── landing.html       # Public SaaS landing page
@@ -134,7 +207,9 @@ Landing -> Signup -> Verify Email -> Checkout (Stripe) -> Dashboard -> Install W
 │   ├── terms.html         # Terms & Conditions
 │   ├── privacy.html       # Privacy Policy
 │   ├── dashboard.html     # Dashboard with leads table
-│   └── install.html       # Dashboard install page (dark SaaS UI)
+│   ├── install.html       # Dashboard install page (dark SaaS UI)
+│   ├── training.html      # AI Training page (business knowledge)
+│   └── conversations.html # Conversations viewer
 ├── public/
 │   ├── login.html         # Login page (dark SaaS UI)
 │   ├── demo.html          # Widget demo
@@ -142,15 +217,15 @@ Landing -> Signup -> Verify Email -> Checkout (Stripe) -> Dashboard -> Install W
 ├── routes/
 │   ├── auth.js            # Authentication (login, signup, resend-verification)
 │   ├── chat.js            # AI chat with usage limits
-│   ├── dashboard.js       # Dashboard (page, leads, checkout, install) with protection
+│   ├── dashboard.js       # Dashboard (leads, checkout, install, training, conversations, scrape)
 │   ├── install.js         # Install JSON API
-│   ├── agent.js           # Public AI agent
+│   ├── agent.js           # Public AI agent (with knowledge + chat history)
 │   ├── publicBusiness.js  # Public business page
-│   └── webhook.js         # Stripe webhooks (syncs is_paid + subscription_status)
+│   └── webhook.js         # Stripe webhooks
 ├── services/
 │   ├── db.js              # PostgreSQL connection pool
 │   ├── stripeService.js   # Stripe checkout sessions
-│   ├── openaiService.js   # OpenAI sales reply generation
+│   ├── openaiService.js   # OpenAI sales reply (with business knowledge + guardrails)
 │   └── emailService.js    # Nodemailer verification email service
 └── middleware/
     ├── authMiddleware.js   # Session auth check
@@ -170,3 +245,5 @@ Landing -> Signup -> Verify Email -> Checkout (Stripe) -> Dashboard -> Install W
 - **stripe** — Stripe payment processing
 - **cors** — Cross-origin request support
 - **nodemailer** — Email sending for verification
+- **cheerio** — HTML parsing for website scraping
+- **node-fetch@2** — HTTP client for website scraping

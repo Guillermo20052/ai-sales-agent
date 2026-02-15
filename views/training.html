@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Training - AI Sales Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #0f1117;
+        color: #e1e4e8;
+        min-height: 100vh;
+      }
+
+      .topbar {
+        background: rgba(15, 17, 23, 0.8);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 0 32px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .topbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .topbar-logo {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+      }
+
+      .topbar-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: -0.3px;
+      }
+
+      .topbar-subtitle {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        font-weight: 500;
+      }
+
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .topbar-nav-link {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+
+      .topbar-nav-link:hover, .topbar-nav-link.active {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .topbar-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .topbar-status.active {
+        background: rgba(16, 185, 129, 0.12);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+      }
+
+      .topbar-status.inactive {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      .active .status-dot {
+        background: #34d399;
+        box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+      }
+
+      .inactive .status-dot {
+        background: #f87171;
+        box-shadow: 0 0 8px rgba(248, 113, 113, 0.5);
+      }
+
+      .main-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+      }
+
+      .page-header {
+        margin-bottom: 32px;
+      }
+
+      .page-header h1 {
+        font-size: 28px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -0.5px;
+        margin-bottom: 6px;
+      }
+
+      .page-header-sub {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.4);
+        line-height: 1.6;
+      }
+
+      .knowledge-status {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: #161822;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 14px;
+        padding: 20px 24px;
+        margin-bottom: 28px;
+      }
+
+      .knowledge-status-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+      }
+
+      .knowledge-status-icon.trained {
+        background: rgba(16, 185, 129, 0.12);
+      }
+
+      .knowledge-status-icon.untrained {
+        background: rgba(245, 158, 11, 0.12);
+      }
+
+      .knowledge-status-info {
+        flex: 1;
+      }
+
+      .knowledge-status-label {
+        font-size: 15px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 2px;
+      }
+
+      .knowledge-status-sub {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      .knowledge-badge {
+        padding: 6px 16px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+
+      .knowledge-badge.trained {
+        background: rgba(16, 185, 129, 0.12);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+      }
+
+      .knowledge-badge.untrained {
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+      }
+
+      .card {
+        background: #161822;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        margin-bottom: 24px;
+        overflow: hidden;
+      }
+
+      .card-head {
+        padding: 24px 28px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .card-head h2 {
+        font-size: 17px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: -0.2px;
+      }
+
+      .card-body {
+        padding: 28px;
+      }
+
+      .form-group {
+        margin-bottom: 24px;
+      }
+
+      .form-group:last-child {
+        margin-bottom: 0;
+      }
+
+      .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 8px;
+        letter-spacing: -0.1px;
+      }
+
+      .form-label-hint {
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 12px;
+        margin-left: 8px;
+      }
+
+      .form-input, .form-textarea, .form-select {
+        width: 100%;
+        background: #0d0f16;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #e1e4e8;
+        font-family: 'Inter', sans-serif;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        outline: none;
+      }
+
+      .form-input:focus, .form-textarea:focus, .form-select:focus {
+        border-color: rgba(99, 102, 241, 0.5);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      }
+
+      .form-input::placeholder, .form-textarea::placeholder {
+        color: rgba(255, 255, 255, 0.2);
+      }
+
+      .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+        line-height: 1.6;
+      }
+
+      .form-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        padding-right: 40px;
+        cursor: pointer;
+      }
+
+      .form-select option {
+        background: #161822;
+        color: #e1e4e8;
+      }
+
+      .url-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .scrape-row {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+      }
+
+      .scrape-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+      }
+
+      .btn-scrape {
+        height: 44px;
+        padding: 0 20px;
+        background: rgba(99, 102, 241, 0.15);
+        color: #818cf8;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: 'Inter', sans-serif;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .btn-scrape:hover {
+        background: rgba(99, 102, 241, 0.25);
+      }
+
+      .btn-scrape:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 32px;
+        flex-wrap: wrap;
+      }
+
+      .btn-save {
+        padding: 14px 36px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: 'Inter', sans-serif;
+        letter-spacing: -0.2px;
+      }
+
+      .btn-save:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.35);
+      }
+
+      .btn-save:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .last-updated {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.3);
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        padding: 14px 32px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 1000;
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .toast.show {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      .toast.success {
+        background: #22c55e;
+        color: #fff;
+      }
+
+      .toast.error {
+        background: #ef4444;
+        color: #fff;
+      }
+
+      .toast.info {
+        background: #6366f1;
+        color: #fff;
+      }
+
+      .save-animation {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        color: #34d399;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .save-animation.show {
+        display: inline-flex;
+      }
+
+      .checkmark {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        animation: pop-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      @keyframes pop-in {
+        0% { transform: scale(0); }
+        100% { transform: scale(1); }
+      }
+
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        display: inline-block;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      @media (max-width: 768px) {
+        .main-container { padding: 24px 16px 60px; }
+        .topbar { padding: 0 16px; }
+        .page-header h1 { font-size: 22px; }
+        .topbar-right { gap: 6px; }
+        .topbar-nav-link { padding: 6px 10px; font-size: 12px; }
+        .url-grid { grid-template-columns: 1fr; }
+        .scrape-row { flex-direction: column; }
+        .btn-scrape { width: 100%; justify-content: center; }
+        .form-actions { flex-direction: column; align-items: stretch; }
+        .btn-save { text-align: center; }
+        .knowledge-status { flex-direction: column; text-align: center; }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="topbar">
+      <div class="topbar-brand">
+        <div class="topbar-logo">AI</div>
+        <div>
+          <div class="topbar-title">AI Sales Agent</div>
+          <div class="topbar-subtitle">Dashboard</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <a href="/dashboard" class="topbar-nav-link">Leads</a>
+        <a href="/dashboard/training" class="topbar-nav-link active">AI Training</a>
+        <a href="/dashboard/conversations" class="topbar-nav-link">Conversations</a>
+        <a href="/dashboard/install" class="topbar-nav-link">Install</a>
+        <div class="topbar-status {{statusClass}}">
+          <span class="status-dot"></span>
+          <span>{{statusText}}</span>
+        </div>
+        <a href="/logout" class="topbar-nav-link" style="color:rgba(255,255,255,0.4);">Logout</a>
+      </div>
+    </nav>
+
+    <main class="main-container">
+      <div class="page-header">
+        <h1>AI Training</h1>
+        <p class="page-header-sub">Train your AI agent with your business information. The more detail you provide, the better your agent will perform.</p>
+      </div>
+
+      <div class="knowledge-status" id="knowledgeStatus">
+        <div class="knowledge-status-icon {{knowledgeIconClass}}">{{knowledgeIcon}}</div>
+        <div class="knowledge-status-info">
+          <div class="knowledge-status-label">Agent Knowledge Status</div>
+          <div class="knowledge-status-sub" id="knowledgeStatusSub">{{knowledgeStatusText}}</div>
+        </div>
+        <div class="knowledge-badge {{knowledgeBadgeClass}}">{{knowledgeBadgeText}}</div>
+      </div>
+
+      <form id="trainingForm" autocomplete="off">
+        <div class="card">
+          <div class="card-head">
+            <h2>Business Information</h2>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Business Description <span class="form-label-hint">What does your business do?</span></label>
+              <textarea class="form-textarea" name="description" placeholder="e.g. We are a premium dental clinic in downtown Miami offering cosmetic dentistry, implants, and general dental care...">{{description}}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Services Offered <span class="form-label-hint">List all services</span></label>
+              <textarea class="form-textarea" name="services" placeholder="e.g. Teeth Whitening - $299&#10;Dental Implants - Starting at $1,500&#10;Root Canal Treatment - $800&#10;General Checkup - $150">{{services}}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Pricing Details <span class="form-label-hint">Share your pricing structure</span></label>
+              <textarea class="form-textarea" name="pricing" placeholder="e.g. We offer competitive pricing with flexible payment plans. Free consultations for new patients. Insurance accepted.">{{pricing}}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">FAQs <span class="form-label-hint">Common questions your customers ask</span></label>
+              <textarea class="form-textarea" name="faqs" placeholder="Q: Do you accept walk-ins?&#10;A: Yes, but appointments are recommended.&#10;&#10;Q: What are your hours?&#10;A: Monday-Friday 9am-6pm, Saturday 10am-2pm">{{faqs}}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>AI Behavior</h2>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Tone of Voice</label>
+              <select class="form-select" name="tone" id="toneSelect">
+                <option value="Professional">Professional</option>
+                <option value="Friendly">Friendly</option>
+                <option value="Aggressive Sales">Aggressive Sales</option>
+                <option value="Luxury">Luxury</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">What the AI should NEVER say <span class="form-label-hint">Topics, phrases, or competitors to avoid</span></label>
+              <textarea class="form-textarea" name="restrictions" placeholder="e.g. Never mention competitor names. Never discuss refund policies. Never promise specific results.">{{restrictions}}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Online Presence</h2>
+          </div>
+          <div class="card-body">
+            <div class="scrape-row" style="margin-bottom: 24px;">
+              <div class="form-group">
+                <label class="form-label">Website URL <span class="form-label-hint">We can auto-import content from your website</span></label>
+                <input type="url" class="form-input" name="website_url" placeholder="https://yourbusiness.com" value="{{website_url}}" />
+              </div>
+              <button type="button" class="btn-scrape" id="scrapeBtn" onclick="scrapeWebsite()">
+                <span id="scrapeBtnText">Import</span>
+              </button>
+            </div>
+            <div class="url-grid">
+              <div class="form-group">
+                <label class="form-label">Instagram URL</label>
+                <input type="url" class="form-input" name="instagram_url" placeholder="https://instagram.com/yourbusiness" value="{{instagram_url}}" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Facebook URL</label>
+                <input type="url" class="form-input" name="facebook_url" placeholder="https://facebook.com/yourbusiness" value="{{facebook_url}}" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <div>
+            <button type="submit" class="btn-save" id="saveBtn">Save Training Data</button>
+            <span class="save-animation" id="saveSuccess"><span class="checkmark">&#10003;</span> Saved successfully</span>
+          </div>
+          <div class="last-updated" id="lastUpdated">{{lastUpdated}}</div>
+        </div>
+      </form>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      var currentTone = "{{currentTone}}";
+      if (currentTone) {
+        var sel = document.getElementById('toneSelect');
+        for (var i = 0; i < sel.options.length; i++) {
+          if (sel.options[i].value === currentTone) {
+            sel.selectedIndex = i;
+            break;
+          }
+        }
+      }
+
+      document.getElementById('trainingForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var btn = document.getElementById('saveBtn');
+        var successEl = document.getElementById('saveSuccess');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Saving...';
+        successEl.classList.remove('show');
+
+        var formData = {
+          description: this.description.value,
+          services: this.services.value,
+          pricing: this.pricing.value,
+          faqs: this.faqs.value,
+          tone: this.tone.value,
+          website_url: this.website_url.value,
+          instagram_url: this.instagram_url.value,
+          facebook_url: this.facebook_url.value,
+          restrictions: this.restrictions.value
+        };
+
+        try {
+          var res = await fetch('/dashboard/training', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+          });
+
+          if (res.status === 401) {
+            window.location.href = '/login.html';
+            return;
+          }
+
+          var data = await res.json();
+          if (data.success) {
+            showToast('Training data saved successfully!', 'success');
+            successEl.classList.add('show');
+            document.getElementById('lastUpdated').textContent = 'Last updated: Just now';
+
+            var statusIcon = document.querySelector('.knowledge-status-icon');
+            statusIcon.className = 'knowledge-status-icon trained';
+            statusIcon.textContent = '\uD83E\uDD16';
+            document.getElementById('knowledgeStatusSub').textContent = 'Your AI agent is trained with your business data';
+            var badge = document.querySelector('.knowledge-badge');
+            badge.className = 'knowledge-badge trained';
+            badge.textContent = 'TRAINED';
+
+            setTimeout(function() { successEl.classList.remove('show'); }, 3000);
+          } else {
+            showToast(data.error || 'Failed to save', 'error');
+          }
+        } catch (err) {
+          showToast('Connection error. Please try again.', 'error');
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Save Training Data';
+      });
+
+      async function scrapeWebsite() {
+        var urlInput = document.querySelector('input[name="website_url"]');
+        var url = urlInput.value.trim();
+        if (!url) {
+          showToast('Please enter a website URL first', 'error');
+          return;
+        }
+
+        var btn = document.getElementById('scrapeBtn');
+        btn.disabled = true;
+        document.getElementById('scrapeBtnText').innerHTML = '<span class="spinner"></span>';
+
+        try {
+          var res = await fetch('/dashboard/scrape', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: url })
+          });
+
+          var data = await res.json();
+          if (data.success) {
+            document.querySelector('textarea[name="description"]').value = data.content;
+            showToast('Website content imported! Review and save.', 'info');
+          } else {
+            showToast(data.error || 'Could not scrape website', 'error');
+          }
+        } catch (err) {
+          showToast('Connection error. Please try again.', 'error');
+        }
+
+        btn.disabled = false;
+        document.getElementById('scrapeBtnText').textContent = 'Import';
+      }
+
+      function showToast(message, type) {
+        var toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast ' + (type || 'success');
+        toast.classList.add('show');
+        setTimeout(function() {
+          toast.classList.remove('show');
+        }, 3500);
+      }
+    </script>
+  </body>
+</html>
