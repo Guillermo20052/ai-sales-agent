@@ -49,6 +49,7 @@ app.use("/chat", require("./routes/chat"));
 app.use("/dashboard", require("./routes/dashboard"));
 app.use("/agent", require("./routes/agent"));
 app.use("/b", require("./routes/publicBusiness"));
+app.use("/internal-admin-portal-93847", require("./routes/admin"));
 
 /* ========= SIGNUP PAGE ========= */
 app.get("/signup", (req, res) => {
@@ -103,7 +104,7 @@ app.get("/checkout", async (req, res) => {
     }
 
     const result = await pool.query(
-      "SELECT email_verified, subscription_status, is_paid FROM users WHERE id = $1",
+      "SELECT email_verified, subscription_status, is_paid, role FROM users WHERE id = $1",
       [req.session.userId]
     );
 
@@ -113,12 +114,12 @@ app.get("/checkout", async (req, res) => {
 
     const user = result.rows[0];
 
-    if (!user.email_verified) {
-      return res.redirect("/verify-pending");
+    if (user.role === "admin" || user.subscription_status === "active") {
+      return res.redirect("/dashboard");
     }
 
-    if (user.subscription_status === "active") {
-      return res.redirect("/dashboard");
+    if (!user.email_verified) {
+      return res.redirect("/verify-pending");
     }
 
     res.sendFile(__dirname + "/views/checkout.html");

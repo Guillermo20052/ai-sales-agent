@@ -20,7 +20,7 @@ router.get("/", authMiddleware, async (req, res) => {
     const userId = req.session.userId;
 
     const userResult = await pool.query(
-      "SELECT is_paid, email_verified, subscription_status FROM users WHERE id = $1",
+      "SELECT is_paid, email_verified, subscription_status, role FROM users WHERE id = $1",
       [userId],
     );
 
@@ -30,14 +30,16 @@ router.get("/", authMiddleware, async (req, res) => {
 
     const user = userResult.rows[0];
 
-    if (!user.email_verified) {
-      return res.redirect("/verify-pending");
-    }
+    const isActive = user.role === "admin" || user.subscription_status === "active";
 
-    const isActive = user.subscription_status === "active";
+    if (user.role !== "admin") {
+      if (!user.email_verified) {
+        return res.redirect("/verify-pending");
+      }
 
-    if (!isActive) {
-      return res.redirect("/checkout");
+      if (!isActive) {
+        return res.redirect("/checkout");
+      }
     }
 
     const result = await pool.query(
@@ -195,7 +197,7 @@ router.get("/install", authMiddleware, async (req, res) => {
     const userId = req.session.userId;
 
     const userResult = await pool.query(
-      "SELECT is_paid, email_verified, subscription_status FROM users WHERE id = $1",
+      "SELECT is_paid, email_verified, subscription_status, role FROM users WHERE id = $1",
       [userId],
     );
 
@@ -205,14 +207,16 @@ router.get("/install", authMiddleware, async (req, res) => {
 
     const user = userResult.rows[0];
 
-    if (!user.email_verified) {
-      return res.redirect("/verify-pending");
-    }
+    const isActive = user.role === "admin" || user.subscription_status === "active";
 
-    const isActive = user.subscription_status === "active";
+    if (user.role !== "admin") {
+      if (!user.email_verified) {
+        return res.redirect("/verify-pending");
+      }
 
-    if (!isActive) {
-      return res.redirect("/checkout");
+      if (!isActive) {
+        return res.redirect("/checkout");
+      }
     }
 
     const result = await pool.query(
@@ -274,14 +278,16 @@ router.get("/training", authMiddleware, async (req, res) => {
     const userId = req.session.userId;
 
     const userResult = await pool.query(
-      "SELECT email_verified, subscription_status FROM users WHERE id = $1",
+      "SELECT email_verified, subscription_status, role FROM users WHERE id = $1",
       [userId],
     );
 
     if (!userResult.rows.length) return res.redirect("/login.html");
     const user = userResult.rows[0];
-    if (!user.email_verified) return res.redirect("/verify-pending");
-    if (user.subscription_status !== "active") return res.redirect("/checkout");
+    if (user.role !== "admin") {
+      if (!user.email_verified) return res.redirect("/verify-pending");
+      if (user.subscription_status !== "active") return res.redirect("/checkout");
+    }
 
     const knowledgeResult = await pool.query(
       "SELECT * FROM business_knowledge WHERE user_id = $1",
@@ -450,13 +456,15 @@ router.get("/conversations", authMiddleware, async (req, res) => {
     const userId = req.session.userId;
 
     const userResult = await pool.query(
-      "SELECT email_verified, subscription_status FROM users WHERE id = $1",
+      "SELECT email_verified, subscription_status, role FROM users WHERE id = $1",
       [userId],
     );
     if (!userResult.rows.length) return res.redirect("/login.html");
     const user = userResult.rows[0];
-    if (!user.email_verified) return res.redirect("/verify-pending");
-    if (user.subscription_status !== "active") return res.redirect("/checkout");
+    if (user.role !== "admin") {
+      if (!user.email_verified) return res.redirect("/verify-pending");
+      if (user.subscription_status !== "active") return res.redirect("/checkout");
+    }
 
     const bpResult = await pool.query(
       "SELECT id, business_name FROM business_profiles WHERE user_id = $1",
@@ -546,10 +554,13 @@ router.post("/refund", authMiddleware, async (req, res) => {
     }
 
     const userResult = await pool.query(
-      "SELECT subscription_status FROM users WHERE id = $1",
+      "SELECT subscription_status, role FROM users WHERE id = $1",
       [userId]
     );
-    if (!userResult.rows.length || userResult.rows[0].subscription_status !== "active") {
+    if (!userResult.rows.length) {
+      return res.status(400).json({ error: "User not found." });
+    }
+    if (userResult.rows[0].role !== "admin" && userResult.rows[0].subscription_status !== "active") {
       return res.status(400).json({ error: "No active subscription found." });
     }
 

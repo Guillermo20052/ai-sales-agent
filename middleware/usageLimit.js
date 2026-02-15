@@ -7,7 +7,7 @@ async function usageLimit(req, res, next) {
     const userId = req.session.userId;
 
     const result = await pool.query(
-      "SELECT is_paid, message_count, current_period_start FROM users WHERE id = $1",
+      "SELECT is_paid, message_count, current_period_start, role FROM users WHERE id = $1",
       [userId],
     );
 
@@ -17,8 +17,7 @@ async function usageLimit(req, res, next) {
 
     const user = result.rows[0];
 
-    // Paid users → unlimited
-    if (user.is_paid) {
+    if (user.role === "admin" || user.is_paid) {
       return next();
     }
 

@@ -11,28 +11,29 @@ async function paymentRequired(req, res, next) {
       });
     }
 
-    const result = await pool.query("SELECT is_paid FROM users WHERE id = $1", [
+    const result = await pool.query("SELECT is_paid, role FROM users WHERE id = $1", [
       userId,
     ]);
 
-    // User not found
     if (!result.rows.length) {
       return res.status(401).json({
         error: "User not found.",
       });
     }
 
-    const isPaid = result.rows[0].is_paid;
+    const user = result.rows[0];
 
-    // Not subscribed
-    if (!isPaid) {
+    if (user.role === "admin") {
+      return next();
+    }
+
+    if (!user.is_paid) {
       return res.status(403).json({
         error: "Active subscription required.",
         upgrade_endpoint: "/dashboard/checkout",
       });
     }
 
-    // Paid → allow access
     next();
   } catch (err) {
     console.error("PAYMENT CHECK ERROR:", err);

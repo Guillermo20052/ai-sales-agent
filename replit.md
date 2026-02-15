@@ -20,7 +20,8 @@ The application is built on **Node.js/Express**, serving as the backend HTTP fra
 - **Embeddable Chat Widget**: Provides a `widget.js` for easy integration of the AI chat agent into external websites.
 - **Lead Capture & Dashboard**: A comprehensive dashboard displays leads and provides access to AI training, conversation logs, and installation instructions for the chat widget.
 - **Chat History**: Stores every user message and AI response in `conversations` and `messages` tables, allowing businesses to review interactions.
-- **Authorization**: Middleware handles authentication checks, email verification, and subscription status to protect routes.
+- **Authorization**: Middleware handles authentication checks, email verification, and subscription status to protect routes. Admin role bypasses all subscription/payment checks.
+- **Admin System**: Admin account (aisales@aiagentproperties.com) auto-provisioned with role=admin, active subscription, verified email. Hidden admin portal at `/internal-admin-portal-93847` with platform stats, user management, and leads table. Protected by `requireAdmin` middleware.
 
 ### Database
 **PostgreSQL** is the chosen database, managed via the `pg` library. Key tables include `users`, `business_profiles`, `leads`, `business_knowledge`, `conversations`, `messages`, and `refunds`.

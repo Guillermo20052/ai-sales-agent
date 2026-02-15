@@ -38,7 +38,9 @@ router.post("/login", async (req, res) => {
 
     let redirect = "/dashboard";
 
-    if (!user.email_verified) {
+    if (user.role === "admin") {
+      redirect = "/dashboard";
+    } else if (!user.email_verified) {
       redirect = "/verify-pending";
     } else if (user.subscription_status !== "active") {
       redirect = "/checkout";
@@ -86,11 +88,21 @@ router.post("/signup", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomUUID();
 
+    const ADMIN_EMAIL = "aisales@aiagentproperties.com";
+    const isAdmin = email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
     const userResult = await pool.query(
-      `INSERT INTO users (email, password, email_verified, verification_token, subscription_status, terms_accepted)
-       VALUES ($1, $2, false, $3, 'inactive', true)
+      `INSERT INTO users (email, password, email_verified, verification_token, subscription_status, terms_accepted, role)
+       VALUES ($1, $2, $3, $4, $5, true, $6)
        RETURNING id`,
-      [email, hashedPassword, verificationToken]
+      [
+        email,
+        hashedPassword,
+        isAdmin ? true : false,
+        isAdmin ? null : verificationToken,
+        isAdmin ? "active" : "inactive",
+        isAdmin ? "admin" : "user"
+      ]
     );
 
     const userId = userResult.rows[0].id;
@@ -101,6 +113,14 @@ router.post("/signup", async (req, res) => {
     );
 
     req.session.userId = userId;
+
+    if (isAdmin) {
+      return res.json({
+        message: "Admin account created! You have full access.",
+        redirect: "/dashboard",
+        user: { id: userId, email: email },
+      });
+    }
 
     await sendVerificationEmail(email, verificationToken);
 
