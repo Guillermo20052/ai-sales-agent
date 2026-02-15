@@ -117,7 +117,7 @@ app.get("/checkout", async (req, res) => {
       return res.redirect("/verify-pending");
     }
 
-    if (user.subscription_status === "active" || user.is_paid) {
+    if (user.subscription_status === "active") {
       return res.redirect("/dashboard");
     }
 
@@ -129,10 +129,38 @@ app.get("/checkout", async (req, res) => {
 });
 
 /* ========= INSTALL SUCCESS PAGE ========= */
+const Stripe = require("stripe");
+const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
+
 app.get("/install-success", async (req, res) => {
   try {
     if (!req.session.userId) {
       return res.redirect("/login.html");
+    }
+
+    const sessionId = req.query.session_id;
+    if (sessionId) {
+      try {
+        const stripeSession = await stripeClient.checkout.sessions.retrieve(sessionId);
+        const metaUserId = stripeSession.metadata?.userId;
+        if (metaUserId && String(metaUserId) === String(req.session.userId) && stripeSession.payment_status === "paid") {
+          await pool.query(
+            "UPDATE users SET subscription_status = 'active', is_paid = true WHERE id = $1",
+            [req.session.userId]
+          );
+          console.log("INSTALL-SUCCESS: Stripe-verified activation for user:", req.session.userId);
+        }
+      } catch (stripeErr) {
+        console.error("INSTALL-SUCCESS: Stripe session verification error:", stripeErr.message);
+      }
+    }
+
+    const userCheck = await pool.query(
+      "SELECT subscription_status FROM users WHERE id = $1",
+      [req.session.userId]
+    );
+    if (!userCheck.rows.length || userCheck.rows[0].subscription_status !== "active") {
+      return res.redirect("/checkout");
     }
 
     const result = await pool.query(
@@ -156,6 +184,13 @@ app.get("/install-success", async (req, res) => {
     console.error("PAYMENT SUCCESS ERROR:", err);
     res.status(200).send(`<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Payment Successful</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#0f1117;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}.card{background:#161822;border:1px solid rgba(255,255,255,0.06);border-radius:20px;padding:48px;text-align:center;max-width:440px}.icon{width:64px;height:64px;border-radius:50%;background:rgba(16,185,129,0.12);display:inline-flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:24px}h1{font-size:24px;font-weight:800;color:#fff;margin-bottom:8px}p{font-size:15px;color:rgba(255,255,255,0.5);margin-bottom:32px;line-height:1.6}a{display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:14px;font-weight:700;border-radius:10px;text-decoration:none;transition:all 0.2s}a:hover{transform:translateY(-1px);box-shadow:0 8px 25px rgba(99,102,241,0.35)}</style></head><body><div class="card"><div class="icon">&#10003;</div><h1>Payment Successful!</h1><p>Your subscription has been activated.</p><a href="/dashboard">Go to Dashboard</a></div></body></html>`);
   }
+});
+
+/* ========= LOGOUT ========= */
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/login.html");
+  });
 });
 
 /* ========= BACKWARD COMPAT — /payment-success alias ========= */

@@ -40,7 +40,7 @@ router.post("/login", async (req, res) => {
 
     if (!user.email_verified) {
       redirect = "/verify-pending";
-    } else if (user.subscription_status !== "active" && !user.is_paid) {
+    } else if (user.subscription_status !== "active") {
       redirect = "/checkout";
     }
 

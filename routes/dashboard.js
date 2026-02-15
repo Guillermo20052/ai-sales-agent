@@ -30,11 +30,11 @@ router.get("/", authMiddleware, async (req, res) => {
       return res.redirect("/verify-pending");
     }
 
-    if (user.subscription_status !== "active" && !user.is_paid) {
+    const isActive = user.subscription_status === "active";
+
+    if (!isActive) {
       return res.redirect("/checkout");
     }
-
-    const isPaid = user.is_paid;
 
     const result = await pool.query(
       "SELECT * FROM business_profiles WHERE user_id = $1",
@@ -57,14 +57,14 @@ router.get("/", authMiddleware, async (req, res) => {
       .replace("{{businessName}}", business.business_name)
       .replace(
         "{{statusText}}",
-        isPaid ? "Active Subscription" : "Subscription Inactive",
+        isActive ? "Active Subscription" : "Subscription Inactive",
       )
-      .replace("{{statusClass}}", isPaid ? "active" : "inactive")
+      .replace("{{statusClass}}", isActive ? "active" : "inactive")
       .replace("{{hostedLink}}", hostedLink)
       .replace("{{embedCode}}", embedCode)
       .replace(
         "{{upgradeButton}}",
-        isPaid
+        isActive
           ? ""
           : `<div class="upgrade-banner">
                <div>
@@ -78,7 +78,7 @@ router.get("/", authMiddleware, async (req, res) => {
       )
       .replace(
         "{{agentSection}}",
-        isPaid
+        isActive
           ? `<div class="agent-live-section">
                <div class="card">
                  <div class="card-head">
@@ -117,6 +117,7 @@ router.get("/", authMiddleware, async (req, res) => {
           : "",
       );
 
+    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
     res.send(html);
   } catch (err) {
     console.error("DASHBOARD ERROR:", err);
@@ -190,11 +191,11 @@ router.get("/install", authMiddleware, async (req, res) => {
       return res.redirect("/verify-pending");
     }
 
-    if (user.subscription_status !== "active" && !user.is_paid) {
+    const isActive = user.subscription_status === "active";
+
+    if (!isActive) {
       return res.redirect("/checkout");
     }
-
-    const isPaid = user.is_paid;
 
     const result = await pool.query(
       "SELECT * FROM business_profiles WHERE user_id = $1",
@@ -220,12 +221,12 @@ router.get("/install", authMiddleware, async (req, res) => {
       )
       .replace(
         "{{statusText}}",
-        isPaid ? "Active Subscription" : "Subscription Inactive",
+        isActive ? "Active Subscription" : "Subscription Inactive",
       )
-      .replace("{{statusClass}}", isPaid ? "active" : "inactive")
+      .replace("{{statusClass}}", isActive ? "active" : "inactive")
       .replace(
         "{{upgradeButton}}",
-        isPaid
+        isActive
           ? ""
           : `<div class="upgrade-card">
                <div class="upgrade-info">

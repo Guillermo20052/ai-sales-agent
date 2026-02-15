@@ -43,7 +43,20 @@ router.post("/", async (req, res) => {
 
     await pool.query("UPDATE users SET is_paid = true, subscription_status = 'active' WHERE id = $1", [userId]);
 
-    console.log("✅ Subscription activated for user:", userId);
+    console.log("✅ WEBHOOK: checkout.session.completed — subscription activated for user:", userId);
+  }
+
+  /* =================================
+     SUBSCRIPTION CREATED
+  ================================== */
+  if (event.type === "customer.subscription.created") {
+    const subscription = event.data.object;
+    const userId = subscription.metadata?.userId;
+
+    if (userId && subscription.status === "active") {
+      await pool.query("UPDATE users SET is_paid = true, subscription_status = 'active' WHERE id = $1", [userId]);
+      console.log("✅ WEBHOOK: customer.subscription.created — subscription activated for user:", userId);
+    }
   }
 
   /* =================================

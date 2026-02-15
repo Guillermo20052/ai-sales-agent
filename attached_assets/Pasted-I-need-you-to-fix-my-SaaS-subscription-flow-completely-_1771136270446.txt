@@ -1,0 +1,182 @@
+I need you to fix my SaaS subscription flow completely and restructure it properly.
+
+Current issues:
+
+After successful Stripe payment, user is redirected to /install-success for 3 seconds and then back to /checkout
+
+When paid users login, they are redirected back to /checkout
+
+Subscription status is not being properly saved or recognized
+
+Here is what I need implemented cleanly:
+
+1️⃣ Stripe Webhook Must Properly Activate Users
+
+When Stripe sends:
+
+checkout.session.completed
+OR
+
+customer.subscription.created
+
+You must:
+
+Find the user by stripe_customer_id or email
+
+Update users table:
+
+UPDATE users
+SET subscription_status = 'active',
+is_paid = true
+WHERE id = ?
+
+This must be guaranteed before redirecting the user anywhere.
+
+Add logging to confirm:
+console.log("User subscription activated:", user.id)
+
+2️⃣ Fix Login Redirect Logic
+
+Update login logic to:
+
+IF NOT email_verified → redirect = "/verify-pending"
+ELSE IF subscription_status !== 'active' → redirect = "/checkout"
+ELSE → redirect = "/dashboard"
+
+Remove is_paid from logic completely.
+Only use subscription_status.
+
+3️⃣ Fix Success Redirect Flow
+
+After successful Stripe payment:
+
+Redirect to:
+
+/install-success
+
+On that page:
+
+Show success UI
+
+Show hosted AI link
+
+Show embed code
+
+Show "Go to Dashboard" button
+
+Auto redirect after 3 seconds to:
+
+/dashboard
+
+DO NOT redirect to /checkout under any circumstance.
+
+4️⃣ Build Proper Dashboard (Premium UI)
+
+Create a real SaaS dashboard:
+
+Route: /dashboard
+
+Must include:
+
+✔ Top header with:
+
+Business name
+
+Subscription status badge
+
+Logout button
+
+✔ Lead Analytics Section:
+
+Total leads count
+
+New leads count
+
+Contacted leads count
+
+Conversion percentage
+
+Chart.js graph (last 7 days leads)
+
+✔ Recent Leads Table:
+
+Name
+
+Email
+
+Phone
+
+Message
+
+Status dropdown
+
+Created date
+
+✔ Chat History Section:
+
+Store every AI conversation in a new table:
+conversations
+messages
+
+Each message must include:
+
+business_id
+
+sender (user or ai)
+
+content
+
+created_at
+
+Display last 10 conversations in dashboard.
+
+5️⃣ Store Customer Information Automatically
+
+Modify AI logic:
+
+When customer provides:
+
+Name
+
+Email
+
+Phone
+
+Automatically update:
+leads table fields
+
+Use regex detection for:
+
+Email pattern
+
+Phone pattern
+
+"My name is..."
+
+6️⃣ Ensure Production Works
+
+Make sure:
+
+app listens on process.env.PORT
+
+app.listen(PORT, '0.0.0.0')
+
+"/" route returns 200 immediately
+
+7️⃣ Final Expected Behavior
+
+Flow must be:
+
+Signup
+→ Verify Email
+→ Checkout
+→ Stripe payment
+→ Webhook updates user to active
+→ Redirect to /install-success
+→ Auto redirect to /dashboard
+→ Dashboard accessible permanently
+→ Login always sends paid users to /dashboard
+
+No loops.
+No checkout redirect after payment.
+No broken state.
