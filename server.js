@@ -7,6 +7,12 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+/* ========= HEALTH CHECK (MUST BE FAST) ========= */
+/* Replit Deploy sends health checks to "/" */
+app.get("/", (req, res) => {
+  res.status(200).send("OK");
+});
+
 /* ========= STRIPE WEBHOOK (MUST BE FIRST & RAW) ========= */
 app.use(
   "/webhook",
@@ -15,7 +21,7 @@ app.use(
 );
 
 /* ========= MIDDLEWARE ========= */
-app.use(cors()); // Allow cross-origin requests (for widget dev)
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -24,15 +30,11 @@ app.use(
     secret: process.env.SESSION_SECRET || "devsecret",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }, // set true when using HTTPS only
+    cookie: { secure: false }, // Set true only if forcing HTTPS
   }),
 );
 
 /* ========= STATIC FILES ========= */
-/* Allows serving:
-   https://your-url/widget.js
-   https://your-url/demo.html
-*/
 app.use(express.static("public"));
 
 /* ========= ROUTES ========= */
@@ -40,15 +42,14 @@ app.use("/auth", require("./routes/auth"));
 app.use("/chat", require("./routes/chat"));
 app.use("/dashboard", require("./routes/dashboard"));
 app.use("/agent", require("./routes/agent"));
-app.use("/dashboard/install", require("./routes/install"));
 app.use("/b", require("./routes/publicBusiness"));
 
-/* ========= HEALTH CHECK ========= */
-app.get("/", (req, res) => {
-  res.send("🚀 Sales Agent SaaS backend is running");
+/* ========= REAL LANDING PAGE ========= */
+app.get("/home", (req, res) => {
+  res.sendFile(__dirname + "/public/index.html");
 });
 
-/* ========= STRIPE SUCCESS / CANCEL PAGES ========= */
+/* ========= STRIPE SUCCESS / CANCEL ========= */
 app.get("/success", (req, res) => {
   res.send("✅ Payment successful! Subscription activated.");
 });
