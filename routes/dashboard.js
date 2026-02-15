@@ -47,6 +47,10 @@ router.get("/", authMiddleware, async (req, res) => {
       return res.status(400).send("No business profile found.");
     }
 
+    const baseUrl = process.env.BASE_URL || "";
+    const hostedLink = `${baseUrl}/b/${business.id}`;
+    const embedCode = `&lt;script src="${baseUrl}/widget.js" data-business="${business.id}"&gt;&lt;/script&gt;`;
+
     let html = fs.readFileSync("./views/dashboard.html", "utf8");
 
     html = html
@@ -56,6 +60,8 @@ router.get("/", authMiddleware, async (req, res) => {
         isPaid ? "Active Subscription" : "Subscription Inactive",
       )
       .replace("{{statusClass}}", isPaid ? "active" : "inactive")
+      .replace("{{hostedLink}}", hostedLink)
+      .replace("{{embedCode}}", embedCode)
       .replace(
         "{{upgradeButton}}",
         isPaid
@@ -69,6 +75,46 @@ router.get("/", authMiddleware, async (req, res) => {
                  Upgrade Now
                </button>
              </div>`,
+      )
+      .replace(
+        "{{agentSection}}",
+        isPaid
+          ? `<div class="agent-live-section">
+               <div class="card">
+                 <div class="card-head">
+                   <h2>Your AI Agent</h2>
+                   <div class="live-badge"><span class="live-dot"></span>LIVE</div>
+                 </div>
+                 <div class="agent-content">
+                   <div class="agent-row">
+                     <div class="agent-field">
+                       <div class="agent-label">Hosted AI Agent Link</div>
+                       <div class="agent-value" id="hostedLink">${hostedLink}</div>
+                     </div>
+                     <button class="btn-copy" onclick="copyText('hostedLink','Link copied!')">Copy</button>
+                   </div>
+                   <div class="agent-row">
+                     <div class="agent-field">
+                       <div class="agent-label">Embed Code</div>
+                       <div class="agent-value mono" id="embedCode">${embedCode}</div>
+                     </div>
+                     <button class="btn-copy" onclick="copyText('embedCode','Code copied!')">Copy</button>
+                   </div>
+                   <div class="platform-guides">
+                     <div class="agent-label" style="margin-bottom:12px">Quick Install Guides</div>
+                     <div class="guide-grid">
+                       <div class="guide-item"><span>&#127979;</span> <strong>Shopify</strong> — Themes &rarr; Edit Code &rarr; Paste before &lt;/body&gt;</div>
+                       <div class="guide-item"><span>&#127760;</span> <strong>WordPress</strong> — Appearance &rarr; Theme Editor &rarr; footer.php</div>
+                       <div class="guide-item"><span>&#9734;</span> <strong>Wix</strong> — Settings &rarr; Custom Code &rarr; Add Script</div>
+                       <div class="guide-item"><span>&#9670;</span> <strong>Webflow</strong> — Site Settings &rarr; Custom Code &rarr; Footer</div>
+                       <div class="guide-item"><span>&#128247;</span> <strong>Instagram</strong> — Paste hosted link in your bio</div>
+                       <div class="guide-item"><span>&#128205;</span> <strong>Google Business</strong> — Add hosted link to your website field</div>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             </div>`
+          : "",
       );
 
     res.send(html);

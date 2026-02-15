@@ -20,10 +20,8 @@ async function createCheckoutSession(userId) {
         userId: userId,
       },
     },
-    success_url:
-      "https://a9b5a386-8e68-4cc3-9b36-ccd6db49e494-00-f01uu4m4bexo.picard.replit.dev/success",
-    cancel_url:
-      "https://a9b5a386-8e68-4cc3-9b36-ccd6db49e494-00-f01uu4m4bexo.picard.replit.dev/cancel",
+    success_url: `${process.env.BASE_URL}/payment-success`,
+    cancel_url: `${process.env.BASE_URL}/cancel`,
   });
 
   return session.url;

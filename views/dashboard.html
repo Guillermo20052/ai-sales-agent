@@ -378,6 +378,137 @@
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
       }
 
+      .agent-live-section { margin-bottom: 24px; }
+
+      .agent-live-section .card {
+        background: #161822;
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      .live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 700;
+        background: rgba(16,185,129,0.12);
+        color: #34d399;
+        border: 1px solid rgba(16,185,129,0.2);
+        letter-spacing: 0.5px;
+      }
+
+      .live-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #34d399;
+        box-shadow: 0 0 8px rgba(52,211,153,0.5);
+        animation: pulse-live 2s infinite;
+      }
+
+      @keyframes pulse-live {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+
+      .agent-content { padding: 24px 28px; }
+
+      .agent-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px;
+        background: #0d0f16;
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 10px;
+        margin-bottom: 12px;
+      }
+
+      .agent-field { flex: 1; min-width: 0; }
+
+      .agent-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.35);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 4px;
+      }
+
+      .agent-value {
+        font-size: 13px;
+        color: #a5b4fc;
+        word-break: break-all;
+        line-height: 1.5;
+      }
+
+      .agent-value.mono {
+        font-family: 'SF Mono','Fira Code','Consolas',monospace;
+        font-size: 12px;
+      }
+
+      .btn-copy {
+        background: rgba(99,102,241,0.15);
+        color: #818cf8;
+        border: 1px solid rgba(99,102,241,0.2);
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: 'Inter',sans-serif;
+        white-space: nowrap;
+      }
+
+      .btn-copy:hover {
+        background: rgba(99,102,241,0.25);
+      }
+
+      .platform-guides { margin-top: 20px; }
+
+      .guide-grid { display: grid; gap: 8px; }
+
+      .guide-item {
+        font-size: 13px;
+        color: rgba(255,255,255,0.6);
+        padding: 10px 14px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.04);
+        line-height: 1.5;
+      }
+
+      .guide-item strong {
+        color: #fff;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: #22c55e;
+        color: #fff;
+        padding: 12px 28px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        box-shadow: 0 10px 40px rgba(34,197,94,0.3);
+        transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+        z-index: 1000;
+        font-family: 'Inter',sans-serif;
+      }
+
+      .toast.show {
+        transform: translateX(-50%) translateY(0);
+      }
+
       @media (max-width: 768px) {
         .main-container { padding: 24px 16px 60px; }
         .topbar { padding: 0 16px; }
@@ -385,6 +516,8 @@
         .upgrade-banner { flex-direction: column; text-align: center; }
         .topbar-right { gap: 6px; }
         .topbar-nav-link { padding: 6px 10px; font-size: 12px; }
+        .agent-row { flex-direction: column; align-items: stretch; }
+        .btn-copy { align-self: flex-start; }
       }
     </style>
   </head>
@@ -409,6 +542,8 @@
 
     <main class="main-container">
       <div id="upgradeBanner">{{upgradeButton}}</div>
+
+      {{agentSection}}
 
       <div class="page-header">
         <div>
@@ -515,6 +650,43 @@
       }
 
       loadLeads();
+
+      function copyText(id, message) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var text = el.innerText.trim();
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text).then(function() {
+            showToast(message);
+          }).catch(function() {
+            fallbackCopy(el, message);
+          });
+        } else {
+          fallbackCopy(el, message);
+        }
+      }
+
+      function fallbackCopy(el, message) {
+        var range = document.createRange();
+        range.selectNodeContents(el);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        document.execCommand('copy');
+        sel.removeAllRanges();
+        showToast(message);
+      }
+
+      function showToast(message) {
+        var toast = document.getElementById('toast');
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(function() {
+          toast.classList.remove('show');
+        }, 2500);
+      }
     </script>
+    <div class="toast" id="toast"></div>
   </body>
 </html>

@@ -13,6 +13,7 @@ UI preference: Modern dark SaaS aesthetic, premium feel ($50/month tier look).
 
 ## Recent Changes
 
+- **Feb 15, 2026**: Fixed Stripe success_url/cancel_url to use BASE_URL (was hardcoded to dev URL). Added /health endpoint. Created /payment-success page with business info, hosted link, embed code, and auto-redirect. Upgraded dashboard to show agent section with hosted link, embed code, copy buttons, and platform install guides for active subscribers.
 - **Feb 15, 2026**: Implemented full SaaS signup flow: signup page, email verification (Nodemailer), checkout page, dashboard protection (email_verified + subscription_status), terms & privacy pages. Added columns to users table: email_verified, verification_token, subscription_status, terms_accepted. Webhook syncs subscription_status alongside is_paid. Login now redirects based on user state.
 - **Feb 15, 2026**: Added professional SaaS landing page at "/", dashboard page at "/dashboard" with leads table and stats, improved success/cancel pages with dark theme. Added navigation between dashboard pages. All existing routes preserved including /home backward compat.
 - **Feb 15, 2026**: Complete UI redesign of `/dashboard/install` page and `/login.html` page. Dark theme with Inter font, gradient hero card, modern cards with soft shadows, responsive layout, toast notifications.
@@ -32,6 +33,8 @@ Landing -> Signup -> Verify Email -> Checkout (Stripe) -> Dashboard -> Install W
 | Route Prefix | File | Purpose |
 |---|---|---|
 | `/` | `server.js` | Landing page + health check (returns 200, no DB calls) |
+| `/health` | `server.js` | Dedicated health check endpoint (instant 200, no DB) |
+| `/payment-success` | `server.js` | Post-payment success page with business info + auto-redirect |
 | `/home` | `server.js` | Alias for landing page (backward compat) |
 | `/signup` | `server.js` | Signup page (views/signup.html) |
 | `/verify` | `server.js` | Email verification (GET /verify?token=...) |
