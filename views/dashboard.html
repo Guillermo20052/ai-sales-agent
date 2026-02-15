@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - AI Sales Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #0f1117;
+        color: #e1e4e8;
+        min-height: 100vh;
+      }
+
+      .topbar {
+        background: rgba(15, 17, 23, 0.8);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 0 32px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .topbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .topbar-logo {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+      }
+
+      .topbar-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: -0.3px;
+      }
+
+      .topbar-subtitle {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        font-weight: 500;
+      }
+
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .topbar-nav-link {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+
+      .topbar-nav-link:hover, .topbar-nav-link.active {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .topbar-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .topbar-status.active {
+        background: rgba(16, 185, 129, 0.12);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+      }
+
+      .topbar-status.inactive {
+        background: rgba(239, 68, 68, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      .active .status-dot {
+        background: #34d399;
+        box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+      }
+
+      .inactive .status-dot {
+        background: #f87171;
+        box-shadow: 0 0 8px rgba(248, 113, 113, 0.5);
+      }
+
+      .main-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+      }
+
+      .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .page-header h1 {
+        font-size: 28px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -0.5px;
+      }
+
+      .page-header-sub {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-top: 4px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 32px;
+      }
+
+      .stat-card {
+        background: #161822;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 14px;
+        padding: 24px;
+        transition: border-color 0.3s;
+      }
+
+      .stat-card:hover {
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .stat-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.4);
+        margin-bottom: 8px;
+      }
+
+      .stat-value {
+        font-size: 32px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -1px;
+      }
+
+      .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-bottom: 12px;
+      }
+
+      .stat-icon.purple { background: rgba(99, 102, 241, 0.12); }
+      .stat-icon.green { background: rgba(16, 185, 129, 0.12); }
+      .stat-icon.amber { background: rgba(245, 158, 11, 0.12); }
+
+      .card {
+        background: #161822;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        margin-bottom: 24px;
+        overflow: hidden;
+      }
+
+      .card-head {
+        padding: 24px 28px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .card-head h2 {
+        font-size: 17px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: -0.2px;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      thead th {
+        text-align: left;
+        padding: 14px 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.35);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        white-space: nowrap;
+      }
+
+      tbody td {
+        padding: 16px 20px;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.8);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        white-space: nowrap;
+      }
+
+      tbody tr:hover {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .lead-name {
+        font-weight: 600;
+        color: #fff;
+      }
+
+      .lead-email {
+        color: #818cf8;
+      }
+
+      .lead-message {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .badge-new {
+        background: rgba(59, 130, 246, 0.12);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+      }
+
+      .badge-contacted {
+        background: rgba(16, 185, 129, 0.12);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+      }
+
+      .badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+
+      .badge-new .badge-dot { background: #60a5fa; }
+      .badge-contacted .badge-dot { background: #34d399; }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 24px;
+        color: rgba(255, 255, 255, 0.3);
+      }
+
+      .empty-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.3;
+      }
+
+      .empty-state h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 6px;
+      }
+
+      .empty-state p {
+        font-size: 14px;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 60px 24px;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 14px;
+      }
+
+      .upgrade-banner {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        border-radius: 16px;
+        padding: 28px 32px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .upgrade-banner h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 4px;
+      }
+
+      .upgrade-banner p {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .btn-upgrade {
+        background: #fff;
+        color: #b91c1c;
+        padding: 12px 28px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: 'Inter', sans-serif;
+        white-space: nowrap;
+      }
+
+      .btn-upgrade:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      }
+
+      @media (max-width: 768px) {
+        .main-container { padding: 24px 16px 60px; }
+        .topbar { padding: 0 16px; }
+        .page-header h1 { font-size: 22px; }
+        .upgrade-banner { flex-direction: column; text-align: center; }
+        .topbar-right { gap: 6px; }
+        .topbar-nav-link { padding: 6px 10px; font-size: 12px; }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="topbar">
+      <div class="topbar-brand">
+        <div class="topbar-logo">AI</div>
+        <div>
+          <div class="topbar-title">AI Sales Agent</div>
+          <div class="topbar-subtitle">Dashboard</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <a href="/dashboard" class="topbar-nav-link active">Leads</a>
+        <a href="/dashboard/install" class="topbar-nav-link">Install</a>
+        <div class="topbar-status {{statusClass}}" id="statusBadge">
+          <span class="status-dot"></span>
+          <span id="statusText">{{statusText}}</span>
+        </div>
+      </div>
+    </nav>
+
+    <main class="main-container">
+      <div id="upgradeBanner">{{upgradeButton}}</div>
+
+      <div class="page-header">
+        <div>
+          <h1>{{businessName}}</h1>
+          <p class="page-header-sub">Your captured leads from AI conversations</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon purple">&#128202;</div>
+          <div class="stat-label">Total Leads</div>
+          <div class="stat-value" id="totalLeads">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">&#9989;</div>
+          <div class="stat-label">Contacted</div>
+          <div class="stat-value" id="contactedLeads">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber">&#128276;</div>
+          <div class="stat-label">New Leads</div>
+          <div class="stat-value" id="newLeads">-</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Recent Leads</h2>
+        </div>
+        <div id="leadsContent">
+          <div class="loading">Loading leads...</div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      async function loadLeads() {
+        try {
+          const res = await fetch('/dashboard/leads');
+
+          if (res.status === 401) {
+            window.location.href = '/login.html';
+            return;
+          }
+
+          const data = await res.json();
+
+          if (data.error) {
+            document.getElementById('leadsContent').innerHTML =
+              '<div class="empty-state"><div class="empty-icon">&#128203;</div><h3>Error loading leads</h3><p>' + data.error + '</p></div>';
+            return;
+          }
+
+          const leads = data.leads || [];
+          document.getElementById('totalLeads').textContent = leads.length;
+
+          var contacted = 0;
+          var newCount = 0;
+          leads.forEach(function(l) {
+            if (l.status === 'contacted') contacted++;
+            else newCount++;
+          });
+          document.getElementById('contactedLeads').textContent = contacted;
+          document.getElementById('newLeads').textContent = newCount;
+
+          if (leads.length === 0) {
+            document.getElementById('leadsContent').innerHTML =
+              '<div class="empty-state"><div class="empty-icon">&#128203;</div><h3>No leads yet</h3><p>Share your AI agent link to start capturing leads.</p></div>';
+            return;
+          }
+
+          var html = '<div class="table-wrap"><table><thead><tr>';
+          html += '<th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>Status</th><th>Date</th>';
+          html += '</tr></thead><tbody>';
+
+          leads.forEach(function(lead) {
+            var statusClass = lead.status === 'contacted' ? 'badge-contacted' : 'badge-new';
+            var statusLabel = lead.status === 'contacted' ? 'Contacted' : 'New';
+            var date = lead.created_at ? new Date(lead.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+
+            html += '<tr>';
+            html += '<td class="lead-name">' + escapeHtml(lead.name || '-') + '</td>';
+            html += '<td class="lead-email">' + escapeHtml(lead.email || '-') + '</td>';
+            html += '<td>' + escapeHtml(lead.phone || '-') + '</td>';
+            html += '<td class="lead-message" title="' + escapeHtml(lead.message || '') + '">' + escapeHtml(lead.message || '-') + '</td>';
+            html += '<td><span class="badge ' + statusClass + '"><span class="badge-dot"></span>' + statusLabel + '</span></td>';
+            html += '<td>' + date + '</td>';
+            html += '</tr>';
+          });
+
+          html += '</tbody></table></div>';
+          document.getElementById('leadsContent').innerHTML = html;
+
+        } catch (err) {
+          document.getElementById('leadsContent').innerHTML =
+            '<div class="empty-state"><div class="empty-icon">&#9888;</div><h3>Connection error</h3><p>Could not load leads. Please refresh.</p></div>';
+        }
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      loadLeads();
+    </script>
+  </body>
+</html>

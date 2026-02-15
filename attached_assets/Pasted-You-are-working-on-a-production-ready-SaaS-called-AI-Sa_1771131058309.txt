@@ -1,0 +1,113 @@
+You are working on a production-ready SaaS called "AI Sales Agent".
+
+IMPORTANT:
+Do NOT break existing backend logic.
+Do NOT change route names.
+Do NOT change database schema.
+Do NOT modify Stripe logic.
+Do NOT modify webhook logic.
+Do NOT change authentication behavior.
+Do NOT rename server.js.
+Do NOT change port configuration.
+Only improve UI, structure, and production stability.
+
+--------------------------------------------
+GOALS:
+--------------------------------------------
+
+1. Fix production deployment completely:
+- Ensure app listens on process.env.PORT
+- Ensure app listens on 0.0.0.0
+- Ensure "/" returns status 200 immediately
+- Ensure no expensive DB calls on "/"
+- Ensure health checks pass
+
+2. Create a professional SaaS landing page at "/"
+Replace the current plain text homepage with a modern SaaS landing page:
+- Dark modern design
+- Hero section:
+  Headline: "Turn Website Visitors Into Paying Clients — Automatically"
+  Subheadline: "AI Sales Agent that captures leads 24/7"
+  CTA buttons:
+    - "Start Free Trial"
+    - "Login"
+
+- Feature section:
+  - 24/7 Lead Capture
+  - AI-Powered Conversations
+  - Works on Any Website
+  - No Website Changes Required
+
+- Pricing section:
+  $49.99/month
+  Simple. No contracts.
+
+- Footer:
+  Login link
+  Terms placeholder
+  Contact placeholder
+
+Use clean modern CSS.
+No frameworks unless lightweight.
+Keep it server-rendered or static HTML inside /views.
+
+3. Improve /dashboard UI:
+- Modern card layout
+- Clear subscription status badge
+- Clean leads table with:
+    - Name
+    - Email
+    - Phone
+    - Message
+    - Status
+    - Date
+- Add status badge colors (new = blue, contacted = green)
+- Add better spacing and design
+DO NOT break existing API calls.
+
+4. Improve /dashboard/install page:
+Keep existing functionality but improve UI:
+- Highlight hosted link in large box
+- Add "Fastest Setup" section at top
+- Add copy buttons styled properly
+- Clean responsive layout
+
+5. Improve login/register pages:
+- Centered card layout
+- Dark theme
+- Clean error message handling
+- Smooth modern design
+
+6. Keep file structure intact:
+- public/
+- routes/
+- services/
+- views/
+Do not restructure backend.
+
+7. Ensure nothing breaks:
+- /agent/:id must still work
+- /chat must still work
+- /dashboard/install must still work
+- /b/:id must still work
+- Stripe webhook must remain first middleware
+- CORS must remain enabled
+
+8. DO NOT introduce TypeScript.
+9. DO NOT convert to Next.js.
+10. DO NOT break session auth.
+11. DO NOT remove express-session.
+
+--------------------------------------------
+FINAL RESULT:
+--------------------------------------------
+
+This should look like a real venture-backed SaaS.
+Clean.
+Modern.
+Professional.
+No broken routes.
+No backend logic changes.
+Only UI + production hardening.
+
+Explain what files you modified before making changes.

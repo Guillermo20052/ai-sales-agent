@@ -13,7 +13,8 @@ UI preference: Modern dark SaaS aesthetic, premium feel ($50/month tier look).
 
 ## Recent Changes
 
-- **Feb 15, 2026**: Complete UI redesign of `/dashboard/install` page and `/login.html` page. Dark theme with Inter font, gradient hero card, modern cards with soft shadows, responsive layout, toast notifications. No backend logic was changed.
+- **Feb 15, 2026**: Added professional SaaS landing page at "/", dashboard page at "/dashboard" with leads table and stats, improved success/cancel pages with dark theme. Added navigation between dashboard pages. All existing routes preserved including /home backward compat.
+- **Feb 15, 2026**: Complete UI redesign of `/dashboard/install` page and `/login.html` page. Dark theme with Inter font, gradient hero card, modern cards with soft shadows, responsive layout, toast notifications.
 
 ## System Architecture
 
@@ -26,22 +27,28 @@ UI preference: Modern dark SaaS aesthetic, premium feel ($50/month tier look).
 ### Route Structure
 | Route Prefix | File | Status |
 |---|---|---|
+| `/` | `server.js` | Landing page + health check (returns 200, no DB calls) |
+| `/home` | `server.js` | Alias for landing page (backward compat) |
 | `/auth` | `routes/auth.js` | Login endpoint (`POST /auth/login`) |
 | `/chat` | `routes/chat.js` | AI chat with auth + usage limits |
-| `/dashboard` | `routes/dashboard.js` | Leads, checkout, install page |
+| `/dashboard` | `routes/dashboard.js` | Dashboard page, leads API, checkout, install page |
 | `/dashboard/install` | `routes/install.js` | Install JSON API |
 | `/agent` | `routes/agent.js` | Public AI agent endpoint |
 | `/b` | `routes/publicBusiness.js` | Public business page |
 | `/webhook` | `routes/webhook.js` | Stripe webhook handler |
-| `/` | `server.js` | Health check |
+| `/success` | `server.js` | Stripe payment success page |
+| `/cancel` | `server.js` | Stripe payment cancel page |
 
 ### Frontend / UI
 - **Dark SaaS theme** using Inter font (Google Fonts), gradient cards, glass effects
+- `views/landing.html` - Public SaaS landing page (hero, features, pricing, footer)
+- `views/dashboard.html` - Dashboard with leads table, stats cards, status badges
 - `views/install.html` - Dashboard install page (server-rendered with template variables)
 - `public/login.html` - Login page
 - `public/demo.html` - Widget demo page
 - `public/widget.js` - Embeddable chat widget
 - Template variables in install.html: `{{businessName}}`, `{{hostedPage}}`, `{{embedCode}}`, `{{statusText}}`, `{{statusClass}}`, `{{upgradeButton}}`
+- Template variables in dashboard.html: `{{businessName}}`, `{{statusText}}`, `{{statusClass}}`, `{{upgradeButton}}`
 
 ### Authentication
 - Login via `POST /auth/login` using **bcrypt** password comparison.
@@ -70,6 +77,8 @@ UI preference: Modern dark SaaS aesthetic, premium feel ($50/month tier look).
 ├── server.js              # Entry point, middleware, route mounting
 ├── package.json           # Dependencies
 ├── views/
+│   ├── landing.html       # Public SaaS landing page
+│   ├── dashboard.html     # Dashboard with leads table
 │   └── install.html       # Dashboard install page (dark SaaS UI)
 ├── public/
 │   ├── login.html         # Login page (dark SaaS UI)
@@ -78,7 +87,7 @@ UI preference: Modern dark SaaS aesthetic, premium feel ($50/month tier look).
 ├── routes/
 │   ├── auth.js            # Authentication (login)
 │   ├── chat.js            # AI chat with usage limits
-│   ├── dashboard.js       # Dashboard (leads, checkout, install)
+│   ├── dashboard.js       # Dashboard (page, leads, checkout, install)
 │   ├── install.js         # Install JSON API
 │   ├── agent.js           # Public AI agent
 │   ├── publicBusiness.js  # Public business page

@@ -8,6 +8,64 @@ const router = express.Router();
 
 /**
  * =========================
+ * GET /dashboard (Main dashboard page)
+ * =========================
+ */
+router.get("/", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+
+    const result = await pool.query(
+      "SELECT * FROM business_profiles WHERE user_id = $1",
+      [userId],
+    );
+
+    const business = result.rows[0];
+
+    if (!business) {
+      return res.status(400).send("No business profile found.");
+    }
+
+    const userResult = await pool.query(
+      "SELECT is_paid FROM users WHERE id = $1",
+      [userId],
+    );
+
+    const isPaid = userResult.rows[0]?.is_paid;
+
+    let html = fs.readFileSync("./views/dashboard.html", "utf8");
+
+    html = html
+      .replace("{{businessName}}", business.business_name)
+      .replace(
+        "{{statusText}}",
+        isPaid ? "Active Subscription" : "Subscription Inactive",
+      )
+      .replace("{{statusClass}}", isPaid ? "active" : "inactive")
+      .replace(
+        "{{upgradeButton}}",
+        isPaid
+          ? ""
+          : `<div class="upgrade-banner">
+               <div>
+                 <h3>Unlock Unlimited Access</h3>
+                 <p>Remove message limits and get priority support with a Pro subscription.</p>
+               </div>
+               <button class="btn-upgrade" onclick="window.location='/dashboard/checkout'">
+                 Upgrade Now
+               </button>
+             </div>`,
+      );
+
+    res.send(html);
+  } catch (err) {
+    console.error("DASHBOARD ERROR:", err);
+    res.status(500).send("Server error.");
+  }
+});
+
+/**
+ * =========================
  * GET /dashboard/leads
  * =========================
  */
