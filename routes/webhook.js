@@ -6,9 +6,7 @@ const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 /*
-  IMPORTANT:
-  express.raw({ type: "application/json" }) is already applied in server.js
-  This route is mounted at "/webhook"
+  express.raw() is already applied in server.js
 */
 
 router.post("/", async (req, res) => {
@@ -25,7 +23,7 @@ router.post("/", async (req, res) => {
       process.env.STRIPE_WEBHOOK_SECRET,
     );
   } catch (err) {
-    console.error("⚠️ Webhook signature verification failed:", err.message);
+    console.error("⚠️ Signature verification failed:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -33,7 +31,7 @@ router.post("/", async (req, res) => {
 
   try {
     /* =================================
-       FIRST PAYMENT (Subscription Start)
+       CHECKOUT COMPLETED
     ================================== */
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
@@ -84,76 +82,85 @@ router.post("/", async (req, res) => {
           ],
         );
 
-        console.log("✅ Subscription stored for user:", userId);
+        console.log("✅ Subscription stored:", userId);
       }
     }
 
     /* =================================
-       MONTHLY RENEWALS
+       INVOICE PAYMENT SUCCEEDED
     ================================== */
     if (event.type === "invoice.payment_succeeded") {
       const invoice = event.data.object;
+
       const customerId = invoice.customer;
+      if (!customerId) return res.json({ received: true });
 
-      if (customerId) {
-        const userResult = await pool.query(
-          "SELECT id FROM users WHERE stripe_customer_id = $1",
-          [customerId],
-        );
+      const userResult = await pool.query(
+        "SELECT id, lifetime_revenue FROM users WHERE stripe_customer_id = $1",
+        [customerId],
+      );
 
-        if (userResult.rows.length) {
-          const userId = userResult.rows[0].id;
-
-          const subscription = await stripe.subscriptions.retrieve(
-            invoice.subscription,
-          );
-
-          await pool.query(
-            `UPDATE users
-             SET lifetime_revenue = COALESCE(lifetime_revenue, 0) + $1,
-                 is_paid = true,
-                 subscription_status = 'active',
-                 current_period_end = TO_TIMESTAMP($2)
-             WHERE id = $3`,
-            [invoice.amount_paid, subscription.current_period_end, userId],
-          );
-
-          console.log("💰 Renewal processed for user:", userId);
-        }
+      if (!userResult.rows.length) {
+        console.log("⚠️ No user found for customer:", customerId);
+        return res.json({ received: true });
       }
+
+      const user = userResult.rows[0];
+      const userId = user.id;
+
+      // ✅ Get period end directly from invoice payload
+      const periodEnd = invoice.lines?.data?.[0]?.period?.end || null;
+
+      // ✅ Safe revenue calculation (no SQL math)
+      const currentRevenue = Number(user.lifetime_revenue) || 0;
+      const newRevenue = currentRevenue + Number(invoice.amount_paid);
+
+      await pool.query(
+        `UPDATE users
+         SET lifetime_revenue = $1,
+             is_paid = true,
+             subscription_status = 'active',
+             current_period_end =
+               CASE
+                 WHEN $2 IS NOT NULL
+                 THEN TO_TIMESTAMP($2)
+                 ELSE current_period_end
+               END
+         WHERE id = $3`,
+        [newRevenue, periodEnd, userId],
+      );
+
+      console.log("💰 Renewal processed for user:", userId);
     }
 
     /* =================================
-       FAILED PAYMENT
+       INVOICE PAYMENT FAILED
     ================================== */
     if (event.type === "invoice.payment_failed") {
       const invoice = event.data.object;
       const customerId = invoice.customer;
 
-      if (customerId) {
-        const subscriptions = await stripe.subscriptions.list({
-          customer: customerId,
-          limit: 1,
-        });
+      if (!customerId) return res.json({ received: true });
 
-        if (subscriptions.data.length) {
-          const subscription = subscriptions.data[0];
-          const userId = subscription.metadata?.userId;
+      const userResult = await pool.query(
+        "SELECT id FROM users WHERE stripe_customer_id = $1",
+        [customerId],
+      );
 
-          if (userId) {
-            await pool.query(
-              `UPDATE users
-               SET is_paid = false,
-                   subscription_status = 'inactive'
-               WHERE id = $1
-               AND subscription_status != 'refunded'`,
-              [userId],
-            );
+      if (!userResult.rows.length) return res.json({ received: true });
 
-            console.log("❌ Payment failed — user downgraded:", userId);
-          }
-        }
-      }
+      const userId = userResult.rows[0].id;
+
+      await pool.query(
+        `UPDATE users
+         SET is_paid = false,
+             subscription_status = 'inactive'
+         WHERE id = $1
+         AND subscription_status != 'refunded'`,
+        [userId],
+      );
+
+      console.log("❌ Payment failed:", userId);
     }
 
     /* =================================
@@ -171,17 +178,16 @@ router.post("/", async (req, res) => {
                stripe_subscription_id = NULL,
                billing_cycle = NULL,
                subscription_amount = NULL
-           WHERE id = $1
-           AND subscription_status != 'refunded'`,
+           WHERE id = $1`,
           [userId],
         );
 
-        console.log("❌ Subscription canceled — cleaned user:", userId);
+        console.log("❌ Subscription canceled:", userId);
       }
     }
 
     /* =================================
-       SUCCESS RESPONSE TO STRIPE
+       ALWAYS RETURN 200 TO STRIPE
     ================================== */
     res.json({ received: true });
   } catch (err) {
