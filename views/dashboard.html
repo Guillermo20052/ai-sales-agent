@@ -6,12 +6,26 @@
     <title>Dashboard - AI Sales Agent</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
       body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
         background: #0f1117;
         color: #e1e4e8;
         min-height: 100vh;
@@ -79,7 +93,8 @@
         transition: all 0.2s;
       }
 
-      .topbar-nav-link:hover, .topbar-nav-link.active {
+      .topbar-nav-link:hover,
+      .topbar-nav-link.active {
         color: #fff;
         background: rgba(255, 255, 255, 0.06);
       }
@@ -194,9 +209,15 @@
         margin-bottom: 12px;
       }
 
-      .stat-icon.purple { background: rgba(99, 102, 241, 0.12); }
-      .stat-icon.green { background: rgba(16, 185, 129, 0.12); }
-      .stat-icon.amber { background: rgba(245, 158, 11, 0.12); }
+      .stat-icon.purple {
+        background: rgba(99, 102, 241, 0.12);
+      }
+      .stat-icon.green {
+        background: rgba(16, 185, 129, 0.12);
+      }
+      .stat-icon.amber {
+        background: rgba(245, 158, 11, 0.12);
+      }
 
       .card {
         background: #161822;
@@ -303,8 +324,12 @@
         border-radius: 50%;
       }
 
-      .badge-new .badge-dot { background: #60a5fa; }
-      .badge-contacted .badge-dot { background: #34d399; }
+      .badge-new .badge-dot {
+        background: #60a5fa;
+      }
+      .badge-contacted .badge-dot {
+        background: #34d399;
+      }
 
       .empty-state {
         text-align: center;
@@ -369,7 +394,7 @@
         border: none;
         cursor: pointer;
         transition: all 0.2s;
-        font-family: 'Inter', sans-serif;
+        font-family: "Inter", sans-serif;
         white-space: nowrap;
       }
 
@@ -378,11 +403,13 @@
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
       }
 
-      .agent-live-section { margin-bottom: 24px; }
+      .agent-live-section {
+        margin-bottom: 24px;
+      }
 
       .agent-live-section .card {
         background: #161822;
-        border: 1px solid rgba(255,255,255,0.06);
+        border: 1px solid rgba(255, 255, 255, 0.06);
         border-radius: 16px;
         overflow: hidden;
       }
@@ -395,9 +422,9 @@
         border-radius: 100px;
         font-size: 12px;
         font-weight: 700;
-        background: rgba(16,185,129,0.12);
+        background: rgba(16, 185, 129, 0.12);
         color: #34d399;
-        border: 1px solid rgba(16,185,129,0.2);
+        border: 1px solid rgba(16, 185, 129, 0.2);
         letter-spacing: 0.5px;
       }
 
@@ -406,16 +433,23 @@
         height: 6px;
         border-radius: 50%;
         background: #34d399;
-        box-shadow: 0 0 8px rgba(52,211,153,0.5);
+        box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
         animation: pulse-live 2s infinite;
       }
 
       @keyframes pulse-live {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.4; }
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
       }
 
-      .agent-content { padding: 24px 28px; }
+      .agent-content {
+        padding: 24px 28px;
+      }
 
       .agent-row {
         display: flex;
@@ -424,17 +458,20 @@
         gap: 16px;
         padding: 16px;
         background: #0d0f16;
-        border: 1px solid rgba(255,255,255,0.06);
+        border: 1px solid rgba(255, 255, 255, 0.06);
         border-radius: 10px;
         margin-bottom: 12px;
       }
 
-      .agent-field { flex: 1; min-width: 0; }
+      .agent-field {
+        flex: 1;
+        min-width: 0;
+      }
 
       .agent-label {
         font-size: 11px;
         font-weight: 600;
-        color: rgba(255,255,255,0.35);
+        color: rgba(255, 255, 255, 0.35);
         text-transform: uppercase;
         letter-spacing: 0.8px;
         margin-bottom: 4px;
@@ -448,39 +485,44 @@
       }
 
       .agent-value.mono {
-        font-family: 'SF Mono','Fira Code','Consolas',monospace;
+        font-family: "SF Mono", "Fira Code", "Consolas", monospace;
         font-size: 12px;
       }
 
       .btn-copy {
-        background: rgba(99,102,241,0.15);
+        background: rgba(99, 102, 241, 0.15);
         color: #818cf8;
-        border: 1px solid rgba(99,102,241,0.2);
+        border: 1px solid rgba(99, 102, 241, 0.2);
         padding: 8px 18px;
         border-radius: 8px;
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s;
-        font-family: 'Inter',sans-serif;
+        font-family: "Inter", sans-serif;
         white-space: nowrap;
       }
 
       .btn-copy:hover {
-        background: rgba(99,102,241,0.25);
+        background: rgba(99, 102, 241, 0.25);
       }
 
-      .platform-guides { margin-top: 20px; }
+      .platform-guides {
+        margin-top: 20px;
+      }
 
-      .guide-grid { display: grid; gap: 8px; }
+      .guide-grid {
+        display: grid;
+        gap: 8px;
+      }
 
       .guide-item {
         font-size: 13px;
-        color: rgba(255,255,255,0.6);
+        color: rgba(255, 255, 255, 0.6);
         padding: 10px 14px;
-        background: rgba(255,255,255,0.03);
+        background: rgba(255, 255, 255, 0.03);
         border-radius: 8px;
-        border: 1px solid rgba(255,255,255,0.04);
+        border: 1px solid rgba(255, 255, 255, 0.04);
         line-height: 1.5;
       }
 
@@ -526,7 +568,7 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s;
-        font-family: 'Inter', sans-serif;
+        font-family: "Inter", sans-serif;
         white-space: nowrap;
       }
 
@@ -542,7 +584,10 @@
       .refund-confirm-overlay {
         display: none;
         position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
         background: rgba(0, 0, 0, 0.7);
         backdrop-filter: blur(8px);
         z-index: 200;
@@ -551,7 +596,9 @@
         padding: 24px;
       }
 
-      .refund-confirm-overlay.show { display: flex; }
+      .refund-confirm-overlay.show {
+        display: flex;
+      }
 
       .refund-confirm-box {
         background: #161822;
@@ -592,12 +639,17 @@
         font-size: 14px;
         font-weight: 700;
         cursor: pointer;
-        font-family: 'Inter', sans-serif;
+        font-family: "Inter", sans-serif;
         transition: all 0.2s;
       }
 
-      .btn-confirm-refund:hover { background: #dc2626; }
-      .btn-confirm-refund:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn-confirm-refund:hover {
+        background: #dc2626;
+      }
+      .btn-confirm-refund:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
 
       .btn-cancel-refund {
         padding: 12px 28px;
@@ -608,14 +660,17 @@
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        font-family: 'Inter', sans-serif;
+        font-family: "Inter", sans-serif;
         transition: all 0.2s;
       }
 
-      .btn-cancel-refund:hover { background: rgba(255, 255, 255, 0.1); }
+      .btn-cancel-refund:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
 
       .spinner-sm {
-        width: 14px; height: 14px;
+        width: 14px;
+        height: 14px;
         border: 2px solid rgba(255, 255, 255, 0.2);
         border-top-color: #fff;
         border-radius: 50%;
@@ -624,7 +679,11 @@
         vertical-align: middle;
       }
 
-      @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
 
       .toast {
         position: fixed;
@@ -636,27 +695,52 @@
         font-size: 14px;
         font-weight: 600;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-        transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         z-index: 1000;
-        font-family: 'Inter',sans-serif;
+        font-family: "Inter", sans-serif;
       }
 
       .toast.show {
         transform: translateX(-50%) translateY(0);
       }
 
-      .toast.success { background: #22c55e; color: #fff; }
-      .toast.error { background: #ef4444; color: #fff; }
+      .toast.success {
+        background: #22c55e;
+        color: #fff;
+      }
+      .toast.error {
+        background: #ef4444;
+        color: #fff;
+      }
 
       @media (max-width: 768px) {
-        .main-container { padding: 24px 16px 60px; }
-        .topbar { padding: 0 16px; }
-        .page-header h1 { font-size: 22px; }
-        .upgrade-banner { flex-direction: column; text-align: center; }
-        .topbar-right { gap: 6px; }
-        .topbar-nav-link { padding: 6px 10px; font-size: 12px; }
-        .agent-row { flex-direction: column; align-items: stretch; }
-        .btn-copy { align-self: flex-start; }
+        .main-container {
+          padding: 24px 16px 60px;
+        }
+        .topbar {
+          padding: 0 16px;
+        }
+        .page-header h1 {
+          font-size: 22px;
+        }
+        .upgrade-banner {
+          flex-direction: column;
+          text-align: center;
+        }
+        .topbar-right {
+          gap: 6px;
+        }
+        .topbar-nav-link {
+          padding: 6px 10px;
+          font-size: 12px;
+        }
+        .agent-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .btn-copy {
+          align-self: flex-start;
+        }
       }
     </style>
   </head>
@@ -672,27 +756,38 @@
       <div class="topbar-right">
         <a href="/dashboard" class="topbar-nav-link active">Leads</a>
         <a href="/dashboard/training" class="topbar-nav-link">AI Training</a>
-        <a href="/dashboard/conversations" class="topbar-nav-link">Conversations</a>
+        <a href="/dashboard/conversations" class="topbar-nav-link"
+          >Conversations</a
+        >
         <a href="/dashboard/install" class="topbar-nav-link">Install</a>
+
+        {{adminButton}}
+
         <div class="topbar-status {{statusClass}}" id="statusBadge">
           <span class="status-dot"></span>
           <span id="statusText">{{statusText}}</span>
         </div>
-        <a href="/logout" class="topbar-nav-link" style="color:rgba(255,255,255,0.4);">Logout</a>
+
+        <a
+          href="/logout"
+          class="topbar-nav-link"
+          style="color: rgba(255, 255, 255, 0.4)"
+          >Logout</a
+        >
       </div>
     </nav>
 
     <main class="main-container">
       <div id="upgradeBanner">{{upgradeButton}}</div>
 
-      {{agentSection}}
-
-      {{refundSection}}
+      {{agentSection}} {{refundSection}}
 
       <div class="page-header">
         <div>
           <h1>{{businessName}}</h1>
-          <p class="page-header-sub">Your captured leads from AI conversations</p>
+          <p class="page-header-sub">
+            Your captured leads from AI conversations
+          </p>
         </div>
       </div>
 
@@ -727,70 +822,97 @@
     <script>
       async function loadLeads() {
         try {
-          const res = await fetch('/dashboard/leads');
+          const res = await fetch("/dashboard/leads");
 
           if (res.status === 401) {
-            window.location.href = '/login.html';
+            window.location.href = "/login.html";
             return;
           }
 
           const data = await res.json();
 
           if (data.error) {
-            document.getElementById('leadsContent').innerHTML =
-              '<div class="empty-state"><div class="empty-icon">&#128203;</div><h3>Error loading leads</h3><p>' + data.error + '</p></div>';
+            document.getElementById("leadsContent").innerHTML =
+              '<div class="empty-state"><div class="empty-icon">&#128203;</div><h3>Error loading leads</h3><p>' +
+              data.error +
+              "</p></div>";
             return;
           }
 
           const leads = data.leads || [];
-          document.getElementById('totalLeads').textContent = leads.length;
+          document.getElementById("totalLeads").textContent = leads.length;
 
           var contacted = 0;
           var newCount = 0;
-          leads.forEach(function(l) {
-            if (l.status === 'contacted') contacted++;
+          leads.forEach(function (l) {
+            if (l.status === "contacted") contacted++;
             else newCount++;
           });
-          document.getElementById('contactedLeads').textContent = contacted;
-          document.getElementById('newLeads').textContent = newCount;
+          document.getElementById("contactedLeads").textContent = contacted;
+          document.getElementById("newLeads").textContent = newCount;
 
           if (leads.length === 0) {
-            document.getElementById('leadsContent').innerHTML =
+            document.getElementById("leadsContent").innerHTML =
               '<div class="empty-state"><div class="empty-icon">&#128203;</div><h3>No leads yet</h3><p>Share your AI agent link to start capturing leads.</p></div>';
             return;
           }
 
           var html = '<div class="table-wrap"><table><thead><tr>';
-          html += '<th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>Status</th><th>Date</th>';
-          html += '</tr></thead><tbody>';
+          html +=
+            "<th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>Status</th><th>Date</th>";
+          html += "</tr></thead><tbody>";
 
-          leads.forEach(function(lead) {
-            var statusClass = lead.status === 'contacted' ? 'badge-contacted' : 'badge-new';
-            var statusLabel = lead.status === 'contacted' ? 'Contacted' : 'New';
-            var date = lead.created_at ? new Date(lead.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+          leads.forEach(function (lead) {
+            var statusClass =
+              lead.status === "contacted" ? "badge-contacted" : "badge-new";
+            var statusLabel = lead.status === "contacted" ? "Contacted" : "New";
+            var date = lead.created_at
+              ? new Date(lead.created_at).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : "-";
 
-            html += '<tr>';
-            html += '<td class="lead-name">' + escapeHtml(lead.name || '-') + '</td>';
-            html += '<td class="lead-email">' + escapeHtml(lead.email || '-') + '</td>';
-            html += '<td>' + escapeHtml(lead.phone || '-') + '</td>';
-            html += '<td class="lead-message" title="' + escapeHtml(lead.message || '') + '">' + escapeHtml(lead.message || '-') + '</td>';
-            html += '<td><span class="badge ' + statusClass + '"><span class="badge-dot"></span>' + statusLabel + '</span></td>';
-            html += '<td>' + date + '</td>';
-            html += '</tr>';
+            html += "<tr>";
+            html +=
+              '<td class="lead-name">' + escapeHtml(lead.name || "-") + "</td>";
+            html +=
+              '<td class="lead-email">' +
+              escapeHtml(lead.email || "-") +
+              "</td>";
+            html += "<td>" + escapeHtml(lead.phone || "-") + "</td>";
+            html +=
+              '<td class="lead-message" title="' +
+              escapeHtml(lead.message || "") +
+              '">' +
+              escapeHtml(lead.message || "-") +
+              "</td>";
+            html +=
+              '<td><span class="badge ' +
+              statusClass +
+              '"><span class="badge-dot"></span>' +
+              statusLabel +
+              "</span></td>";
+            html += "<td>" + date + "</td>";
+            html += "</tr>";
           });
 
-          html += '</tbody></table></div>';
-          document.getElementById('leadsContent').innerHTML = html;
-
+          html += "</tbody></table></div>";
+          document.getElementById("leadsContent").innerHTML = html;
         } catch (err) {
-          document.getElementById('leadsContent').innerHTML =
+          document.getElementById("leadsContent").innerHTML =
             '<div class="empty-state"><div class="empty-icon">&#9888;</div><h3>Connection error</h3><p>Could not load leads. Please refresh.</p></div>';
         }
       }
 
       function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        if (!str) return "";
+        return str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
       }
 
       loadLeads();
@@ -800,11 +922,14 @@
         if (!el) return;
         var text = el.innerText.trim();
         if (navigator.clipboard) {
-          navigator.clipboard.writeText(text).then(function() {
-            showToast(message);
-          }).catch(function() {
-            fallbackCopy(el, message);
-          });
+          navigator.clipboard
+            .writeText(text)
+            .then(function () {
+              showToast(message);
+            })
+            .catch(function () {
+              fallbackCopy(el, message);
+            });
         } else {
           fallbackCopy(el, message);
         }
@@ -816,68 +941,92 @@
         var sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
-        document.execCommand('copy');
+        document.execCommand("copy");
         sel.removeAllRanges();
         showToast(message);
       }
 
       function showToast(message, type) {
-        var toast = document.getElementById('toast');
+        var toast = document.getElementById("toast");
         if (!toast) return;
         toast.textContent = message;
-        toast.className = 'toast ' + (type || 'success');
-        toast.classList.add('show');
-        setTimeout(function() {
-          toast.classList.remove('show');
+        toast.className = "toast " + (type || "success");
+        toast.classList.add("show");
+        setTimeout(function () {
+          toast.classList.remove("show");
         }, 3000);
       }
     </script>
     <div class="toast" id="toast"></div>
 
-    <div class="refund-confirm-overlay" id="refundOverlay" onclick="if(event.target===this)closeRefundModal()">
+    <div
+      class="refund-confirm-overlay"
+      id="refundOverlay"
+      onclick="if(event.target===this)closeRefundModal()"
+    >
       <div class="refund-confirm-box">
         <h2>Request Refund?</h2>
-        <p>This will cancel your subscription and refund your payment. Your AI agent will stop working immediately. This action cannot be undone.</p>
+        <p>
+          This will cancel your subscription and refund your payment. Your AI
+          agent will stop working immediately. This action cannot be undone.
+        </p>
         <div class="refund-confirm-actions">
-          <button class="btn-cancel-refund" onclick="closeRefundModal()">Keep Subscription</button>
-          <button class="btn-confirm-refund" id="confirmRefundBtn" onclick="processRefund()">Confirm Refund</button>
+          <button class="btn-cancel-refund" onclick="closeRefundModal()">
+            Keep Subscription
+          </button>
+          <button
+            class="btn-confirm-refund"
+            id="confirmRefundBtn"
+            onclick="processRefund()"
+          >
+            Confirm Refund
+          </button>
         </div>
       </div>
     </div>
 
     <script>
       function openRefundModal() {
-        document.getElementById('refundOverlay').classList.add('show');
+        document.getElementById("refundOverlay").classList.add("show");
       }
 
       function closeRefundModal() {
-        document.getElementById('refundOverlay').classList.remove('show');
+        document.getElementById("refundOverlay").classList.remove("show");
       }
 
       async function processRefund() {
-        var btn = document.getElementById('confirmRefundBtn');
+        var btn = document.getElementById("confirmRefundBtn");
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-sm"></span> Processing...';
 
         try {
-          var res = await fetch('/dashboard/refund', { method: 'POST' });
+          var res = await fetch("/dashboard/refund", { method: "POST" });
           var data = await res.json();
 
           closeRefundModal();
 
           if (data.success) {
-            showToast('Refund of $' + data.amount + ' ' + data.currency + ' processed successfully!', 'success');
-            setTimeout(function() { window.location.reload(); }, 2000);
+            showToast(
+              "Refund of $" +
+                data.amount +
+                " " +
+                data.currency +
+                " processed successfully!",
+              "success",
+            );
+            setTimeout(function () {
+              window.location.reload();
+            }, 2000);
           } else {
-            showToast(data.error || 'Refund failed', 'error');
+            showToast(data.error || "Refund failed", "error");
           }
         } catch (err) {
           closeRefundModal();
-          showToast('Connection error. Please try again.', 'error');
+          showToast("Connection error. Please try again.", "error");
         }
 
         btn.disabled = false;
-        btn.textContent = 'Confirm Refund';
+        btn.textContent = "Confirm Refund";
       }
     </script>
   </body>

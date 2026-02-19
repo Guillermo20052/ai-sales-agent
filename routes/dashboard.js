@@ -29,6 +29,7 @@ router.get("/", authMiddleware, async (req, res) => {
     }
 
     const user = userResult.rows[0];
+    const isAdmin = user.role === "admin";
 
     const isActive =
       user.role === "admin" || user.subscription_status === "active";
@@ -135,6 +136,12 @@ router.get("/", authMiddleware, async (req, res) => {
                  <button class="btn-refund" onclick="openRefundModal()">Request Refund</button>
                </div>
              </div>`
+          : "",
+      )
+      .replace(
+        "{{adminButton}}",
+        isAdmin
+          ? `<a href="/internal-admin-portal-93847" class="topbar-nav-link">Admin</a>`
           : "",
       );
 
@@ -476,11 +483,9 @@ router.post("/scrape", authMiddleware, async (req, res) => {
     clearTimeout(timeout);
 
     if (!response.ok) {
-      return res
-        .status(400)
-        .json({
-          error: "Could not fetch website (status " + response.status + ")",
-        });
+      return res.status(400).json({
+        error: "Could not fetch website (status " + response.status + ")",
+      });
     }
 
     const contentType = response.headers.get("content-type") || "";
@@ -631,11 +636,9 @@ router.post("/refund", authMiddleware, async (req, res) => {
       [userId],
     );
     if (existingRefund.rows.length > 0) {
-      return res
-        .status(400)
-        .json({
-          error: "A refund has already been processed for this account.",
-        });
+      return res.status(400).json({
+        error: "A refund has already been processed for this account.",
+      });
     }
 
     const userResult = await pool.query(
@@ -660,12 +663,10 @@ router.post("/refund", authMiddleware, async (req, res) => {
       });
 
       if (!searchResult.data.length) {
-        return res
-          .status(400)
-          .json({
-            error:
-              "Could not find your Stripe subscription. Please contact support.",
-          });
+        return res.status(400).json({
+          error:
+            "Could not find your Stripe subscription. Please contact support.",
+        });
       }
 
       subscription = searchResult.data[0];
@@ -674,11 +675,9 @@ router.post("/refund", authMiddleware, async (req, res) => {
         "REFUND: Stripe subscription search error:",
         searchErr.message,
       );
-      return res
-        .status(500)
-        .json({
-          error: "Could not verify subscription with payment provider.",
-        });
+      return res.status(500).json({
+        error: "Could not verify subscription with payment provider.",
+      });
     }
 
     const subStartDate = new Date(subscription.start_date * 1000);
@@ -707,12 +706,10 @@ router.post("/refund", authMiddleware, async (req, res) => {
       }
 
       if (!latestInvoice || !latestInvoice.payment_intent) {
-        return res
-          .status(400)
-          .json({
-            error:
-              "Could not find the payment to refund. Please contact support.",
-          });
+        return res.status(400).json({
+          error:
+            "Could not find the payment to refund. Please contact support.",
+        });
       }
     } catch (invErr) {
       console.error("REFUND: Invoice retrieval error:", invErr.message);
@@ -784,12 +781,10 @@ router.post("/refund", authMiddleware, async (req, res) => {
     });
   } catch (err) {
     console.error("REFUND ERROR:", err);
-    res
-      .status(500)
-      .json({
-        error:
-          "An unexpected error occurred. Please try again or contact support.",
-      });
+    res.status(500).json({
+      error:
+        "An unexpected error occurred. Please try again or contact support.",
+    });
   }
 });
 
