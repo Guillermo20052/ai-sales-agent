@@ -36,14 +36,19 @@ router.post("/", async (req, res) => {
     const session = event.data.object;
     const userId = session.metadata?.userId;
 
-    if (!userId) {
-      console.log("⚠️ No userId in checkout session metadata");
-      return res.json({ received: true });
-    }
+    if (!userId) return res.json({ received: true });
 
-    await pool.query("UPDATE users SET is_paid = true, subscription_status = 'active' WHERE id = $1", [userId]);
+    await pool.query(
+      `UPDATE users
+       SET is_paid = true,
+           subscription_status = 'active',
+           stripe_customer_id = $1,
+           stripe_subscription_id = $2
+       WHERE id = $3`,
+      [session.customer, session.subscription, userId],
+    );
 
-    console.log("✅ WEBHOOK: checkout.session.completed — subscription activated for user:", userId);
+    console.log("✅ Checkout completed for user:", userId);
   }
 
   /* =================================
@@ -53,57 +58,68 @@ router.post("/", async (req, res) => {
     const subscription = event.data.object;
     const userId = subscription.metadata?.userId;
 
-    if (userId && subscription.status === "active") {
-      await pool.query("UPDATE users SET is_paid = true, subscription_status = 'active' WHERE id = $1", [userId]);
-      console.log("✅ WEBHOOK: customer.subscription.created — subscription activated for user:", userId);
-    }
+    if (!userId) return res.json({ received: true });
+
+    const price = subscription.items.data[0].price;
+
+    await pool.query(
+      `UPDATE users
+       SET stripe_subscription_id = $1,
+           price_id = $2,
+           billing_cycle = $3,
+           subscription_amount = $4,
+           current_period_end = TO_TIMESTAMP($5),
+           is_paid = true,
+           subscription_status = 'active'
+       WHERE id = $6`,
+      [
+        subscription.id,
+        price.id,
+        price.recurring.interval,
+        price.unit_amount,
+        subscription.current_period_end,
+        userId,
+      ],
+    );
+
+    console.log("✅ Subscription stored for user:", userId);
   }
 
   /* =================================
      MONTHLY RENEWALS
   ================================== */
-  if (
-    event.type === "invoice.payment_succeeded" ||
-    event.type === "invoice_payment.paid"
-  ) {
+  if (event.type === "invoice.payment_succeeded") {
     const invoice = event.data.object;
     const customerId = invoice.customer;
 
-    if (!customerId) {
-      console.log("⚠️ No customer ID found on invoice");
-      return res.json({ received: true });
-    }
+    if (!customerId) return res.json({ received: true });
 
-    try {
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customerId,
-        status: "active",
-        limit: 1,
-      });
+    const userResult = await pool.query(
+      "SELECT id FROM users WHERE stripe_customer_id = $1",
+      [customerId],
+    );
 
-      if (!subscriptions.data.length) {
-        console.log("⚠️ No active subscription found for customer");
-        return res.json({ received: true });
-      }
+    if (!userResult.rows.length) return res.json({ received: true });
 
-      const subscription = subscriptions.data[0];
-      const userId = subscription.metadata?.userId;
+    const userId = userResult.rows[0].id;
 
-      if (!userId) {
-        console.log("⚠️ No userId found in subscription metadata");
-        return res.json({ received: true });
-      }
+    // Get subscription to refresh period end
+    const subscription = await stripe.subscriptions.retrieve(
+      invoice.subscription,
+    );
 
-      await pool.query("UPDATE users SET is_paid = true, subscription_status = 'active' WHERE id = $1", [
-        userId,
-      ]);
+    await pool.query(
+      `UPDATE users
+       SET lifetime_revenue = lifetime_revenue + $1,
+           is_paid = true,
+           subscription_status = 'active',
+           current_period_end = TO_TIMESTAMP($2)
+       WHERE id = $3`,
+      [invoice.amount_paid, subscription.current_period_end, userId],
+    );
 
-      console.log("🔁 Monthly renewal successful for user:", userId);
-    } catch (err) {
-      console.error("⚠️ Error processing renewal:", err.message);
-    }
+    console.log("💰 Renewal processed for user:", userId);
   }
-
   /* =================================
      FAILED PAYMENT (Auto Downgrade)
   ================================== */
@@ -129,9 +145,10 @@ router.post("/", async (req, res) => {
 
       if (!userId) return res.json({ received: true });
 
-      await pool.query("UPDATE users SET is_paid = false, subscription_status = 'inactive' WHERE id = $1 AND subscription_status != 'refunded'", [
-        userId,
-      ]);
+      await pool.query(
+        "UPDATE users SET is_paid = false, subscription_status = 'inactive' WHERE id = $1 AND subscription_status != 'refunded'",
+        [userId],
+      );
 
       console.log("❌ Payment failed — user downgraded:", userId);
     } catch (err) {
@@ -148,20 +165,24 @@ router.post("/", async (req, res) => {
   ) {
     const subscription = event.data.object;
 
-    // If not active anymore, downgrade
     if (subscription.status !== "active") {
       const userId = subscription.metadata?.userId;
 
-      if (!userId) {
-        console.log("⚠️ No userId found on canceled subscription");
-        return res.json({ received: true });
-      }
+      if (!userId) return res.json({ received: true });
 
-      await pool.query("UPDATE users SET is_paid = false, subscription_status = 'inactive' WHERE id = $1 AND subscription_status != 'refunded'", [
-        userId,
-      ]);
+      await pool.query(
+        `UPDATE users
+         SET is_paid = false,
+             subscription_status = 'inactive',
+             stripe_subscription_id = NULL,
+             billing_cycle = NULL,
+             subscription_amount = NULL
+         WHERE id = $1
+         AND subscription_status != 'refunded'`,
+        [userId],
+      );
 
-      console.log("❌ Subscription canceled — user downgraded:", userId);
+      console.log("❌ Subscription canceled — cleaned user:", userId);
     }
   }
 
