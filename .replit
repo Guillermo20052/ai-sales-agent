@@ -37,6 +37,6 @@ waitForPort = 5000
 outputType = "webview"
 
 [deployment]
-deploymentTarget = "autoscale"
+deploymentTarget = "gce"
 publicDir = "public"
 run = ["node", "server.js"]
