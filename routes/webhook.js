@@ -118,11 +118,11 @@ router.post("/", async (req, res) => {
          SET lifetime_revenue = COALESCE(lifetime_revenue, 0) + $1,
              is_paid = true,
              subscription_status = 'active',
-             current_period_end = TO_TIMESTAMP($2::bigint)
+             current_period_end = TO_TIMESTAMP($2)
          WHERE id = $3`,
         [
           invoice.amount_paid,
-          periodEnd || Math.floor(Date.now() / 1000),
+          Number(periodEnd) || Math.floor(Date.now() / 1000),
           userId,
         ],
       );
