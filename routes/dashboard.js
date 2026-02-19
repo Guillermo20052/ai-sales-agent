@@ -30,7 +30,8 @@ router.get("/", authMiddleware, async (req, res) => {
 
     const user = userResult.rows[0];
 
-    const isActive = user.role === "admin" || user.subscription_status === "active";
+    const isActive =
+      user.role === "admin" || user.subscription_status === "active";
 
     if (user.role !== "admin") {
       if (!user.email_verified) {
@@ -207,7 +208,8 @@ router.get("/install", authMiddleware, async (req, res) => {
 
     const user = userResult.rows[0];
 
-    const isActive = user.role === "admin" || user.subscription_status === "active";
+    const isActive =
+      user.role === "admin" || user.subscription_status === "active";
 
     if (user.role !== "admin") {
       if (!user.email_verified) {
@@ -286,7 +288,8 @@ router.get("/training", authMiddleware, async (req, res) => {
     const user = userResult.rows[0];
     if (user.role !== "admin") {
       if (!user.email_verified) return res.redirect("/verify-pending");
-      if (user.subscription_status !== "active") return res.redirect("/checkout");
+      if (user.subscription_status !== "active")
+        return res.redirect("/checkout");
     }
 
     const knowledgeResult = await pool.query(
@@ -297,13 +300,25 @@ router.get("/training", authMiddleware, async (req, res) => {
     const k = knowledgeResult.rows[0] || {};
     const isTrained = !!(k.description || k.services || k.pricing || k.faqs);
 
-    const statusText = user.subscription_status === "active" ? "Active Subscription" : "Subscription Inactive";
-    const statusClass = user.subscription_status === "active" ? "active" : "inactive";
+    const statusText =
+      user.subscription_status === "active"
+        ? "Active Subscription"
+        : "Subscription Inactive";
+    const statusClass =
+      user.subscription_status === "active" ? "active" : "inactive";
 
     let lastUpdatedText = "";
     if (k.updated_at) {
       const d = new Date(k.updated_at);
-      lastUpdatedText = "Last updated: " + d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
+      lastUpdatedText =
+        "Last updated: " +
+        d.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
     }
 
     let html = fs.readFileSync("./views/training.html", "utf8");
@@ -323,7 +338,12 @@ router.get("/training", authMiddleware, async (req, res) => {
       .replace("{{lastUpdated}}", lastUpdatedText)
       .replace("{{knowledgeIcon}}", isTrained ? "&#129302;" : "&#9888;")
       .replace("{{knowledgeIconClass}}", isTrained ? "trained" : "untrained")
-      .replace("{{knowledgeStatusText}}", isTrained ? "Your AI agent is trained with your business data" : "No training data yet. Fill in your business details below.")
+      .replace(
+        "{{knowledgeStatusText}}",
+        isTrained
+          ? "Your AI agent is trained with your business data"
+          : "No training data yet. Fill in your business details below.",
+      )
       .replace("{{knowledgeBadgeClass}}", isTrained ? "trained" : "untrained")
       .replace("{{knowledgeBadgeText}}", isTrained ? "TRAINED" : "NOT TRAINED");
 
@@ -343,9 +363,22 @@ router.get("/training", authMiddleware, async (req, res) => {
 router.post("/training", authMiddleware, async (req, res) => {
   try {
     const userId = req.session.userId;
-    const { description, services, pricing, faqs, tone, website_url, instagram_url, facebook_url, restrictions } = req.body;
+    const {
+      description,
+      services,
+      pricing,
+      faqs,
+      tone,
+      website_url,
+      instagram_url,
+      facebook_url,
+      restrictions,
+    } = req.body;
 
-    const existing = await pool.query("SELECT id FROM business_knowledge WHERE user_id = $1", [userId]);
+    const existing = await pool.query(
+      "SELECT id FROM business_knowledge WHERE user_id = $1",
+      [userId],
+    );
 
     if (existing.rows.length > 0) {
       await pool.query(
@@ -354,13 +387,35 @@ router.post("/training", authMiddleware, async (req, res) => {
           tone = $5, website_url = $6, instagram_url = $7, facebook_url = $8,
           restrictions = $9, updated_at = CURRENT_TIMESTAMP
         WHERE user_id = $10`,
-        [description, services, pricing, faqs, tone, website_url, instagram_url, facebook_url, restrictions, userId]
+        [
+          description,
+          services,
+          pricing,
+          faqs,
+          tone,
+          website_url,
+          instagram_url,
+          facebook_url,
+          restrictions,
+          userId,
+        ],
       );
     } else {
       await pool.query(
         `INSERT INTO business_knowledge (user_id, description, services, pricing, faqs, tone, website_url, instagram_url, facebook_url, restrictions)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-        [userId, description, services, pricing, faqs, tone, website_url, instagram_url, facebook_url, restrictions]
+        [
+          userId,
+          description,
+          services,
+          pricing,
+          faqs,
+          tone,
+          website_url,
+          instagram_url,
+          facebook_url,
+          restrictions,
+        ],
       );
     }
 
@@ -392,11 +447,20 @@ router.post("/scrape", authMiddleware, async (req, res) => {
     }
 
     if (!["http:", "https:"].includes(parsedUrl.protocol)) {
-      return res.status(400).json({ error: "Only HTTP/HTTPS URLs are allowed" });
+      return res
+        .status(400)
+        .json({ error: "Only HTTP/HTTPS URLs are allowed" });
     }
 
     const hostname = parsedUrl.hostname.toLowerCase();
-    if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0" || hostname.startsWith("10.") || hostname.startsWith("192.168.") || hostname.startsWith("172.")) {
+    if (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "0.0.0.0" ||
+      hostname.startsWith("10.") ||
+      hostname.startsWith("192.168.") ||
+      hostname.startsWith("172.")
+    ) {
       return res.status(400).json({ error: "Internal URLs are not allowed" });
     }
 
@@ -412,12 +476,18 @@ router.post("/scrape", authMiddleware, async (req, res) => {
     clearTimeout(timeout);
 
     if (!response.ok) {
-      return res.status(400).json({ error: "Could not fetch website (status " + response.status + ")" });
+      return res
+        .status(400)
+        .json({
+          error: "Could not fetch website (status " + response.status + ")",
+        });
     }
 
     const contentType = response.headers.get("content-type") || "";
     if (!contentType.includes("text/html")) {
-      return res.status(400).json({ error: "URL does not point to an HTML page" });
+      return res
+        .status(400)
+        .json({ error: "URL does not point to an HTML page" });
     }
 
     const html = await response.text();
@@ -433,13 +503,17 @@ router.post("/scrape", authMiddleware, async (req, res) => {
     }
 
     if (!text || text.length < 20) {
-      return res.status(400).json({ error: "Could not extract meaningful content from website" });
+      return res
+        .status(400)
+        .json({ error: "Could not extract meaningful content from website" });
     }
 
     res.json({ success: true, content: text });
   } catch (err) {
     if (err.name === "AbortError") {
-      return res.status(400).json({ error: "Website took too long to respond" });
+      return res
+        .status(400)
+        .json({ error: "Website took too long to respond" });
     }
     console.error("SCRAPE ERROR:", err);
     res.status(500).json({ error: "Failed to scrape website" });
@@ -463,7 +537,8 @@ router.get("/conversations", authMiddleware, async (req, res) => {
     const user = userResult.rows[0];
     if (user.role !== "admin") {
       if (!user.email_verified) return res.redirect("/verify-pending");
-      if (user.subscription_status !== "active") return res.redirect("/checkout");
+      if (user.subscription_status !== "active")
+        return res.redirect("/checkout");
     }
 
     const bpResult = await pool.query(
@@ -473,8 +548,12 @@ router.get("/conversations", authMiddleware, async (req, res) => {
     const business = bpResult.rows[0];
     if (!business) return res.status(400).send("No business profile found.");
 
-    const statusText = user.subscription_status === "active" ? "Active Subscription" : "Subscription Inactive";
-    const statusClass = user.subscription_status === "active" ? "active" : "inactive";
+    const statusText =
+      user.subscription_status === "active"
+        ? "Active Subscription"
+        : "Subscription Inactive";
+    const statusClass =
+      user.subscription_status === "active" ? "active" : "inactive";
 
     const convResult = await pool.query(
       `SELECT c.id, c.visitor_id, c.created_at,
@@ -516,13 +595,15 @@ router.get("/conversations/:id", authMiddleware, async (req, res) => {
       "SELECT id FROM business_profiles WHERE user_id = $1",
       [userId],
     );
-    if (!bpResult.rows.length) return res.status(403).json({ error: "Forbidden" });
+    if (!bpResult.rows.length)
+      return res.status(403).json({ error: "Forbidden" });
 
     const conv = await pool.query(
       "SELECT * FROM conversations WHERE id = $1 AND business_id = $2",
       [convId, bpResult.rows[0].id],
     );
-    if (!conv.rows.length) return res.status(404).json({ error: "Conversation not found" });
+    if (!conv.rows.length)
+      return res.status(404).json({ error: "Conversation not found" });
 
     const msgs = await pool.query(
       "SELECT sender, content, created_at FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC",
@@ -547,20 +628,27 @@ router.post("/refund", authMiddleware, async (req, res) => {
 
     const existingRefund = await pool.query(
       "SELECT id FROM refunds WHERE user_id = $1",
-      [userId]
+      [userId],
     );
     if (existingRefund.rows.length > 0) {
-      return res.status(400).json({ error: "A refund has already been processed for this account." });
+      return res
+        .status(400)
+        .json({
+          error: "A refund has already been processed for this account.",
+        });
     }
 
     const userResult = await pool.query(
       "SELECT subscription_status, role FROM users WHERE id = $1",
-      [userId]
+      [userId],
     );
     if (!userResult.rows.length) {
       return res.status(400).json({ error: "User not found." });
     }
-    if (userResult.rows[0].role !== "admin" && userResult.rows[0].subscription_status !== "active") {
+    if (
+      userResult.rows[0].role !== "admin" &&
+      userResult.rows[0].subscription_status !== "active"
+    ) {
       return res.status(400).json({ error: "No active subscription found." });
     }
 
@@ -572,13 +660,25 @@ router.post("/refund", authMiddleware, async (req, res) => {
       });
 
       if (!searchResult.data.length) {
-        return res.status(400).json({ error: "Could not find your Stripe subscription. Please contact support." });
+        return res
+          .status(400)
+          .json({
+            error:
+              "Could not find your Stripe subscription. Please contact support.",
+          });
       }
 
       subscription = searchResult.data[0];
     } catch (searchErr) {
-      console.error("REFUND: Stripe subscription search error:", searchErr.message);
-      return res.status(500).json({ error: "Could not verify subscription with payment provider." });
+      console.error(
+        "REFUND: Stripe subscription search error:",
+        searchErr.message,
+      );
+      return res
+        .status(500)
+        .json({
+          error: "Could not verify subscription with payment provider.",
+        });
     }
 
     const subStartDate = new Date(subscription.start_date * 1000);
@@ -586,50 +686,69 @@ router.post("/refund", authMiddleware, async (req, res) => {
     const daysSinceStart = (now - subStartDate) / (1000 * 60 * 60 * 24);
 
     if (daysSinceStart > 7) {
-      const startFormatted = subStartDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      const startFormatted = subStartDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
       return res.status(400).json({
-        error: `Refund window has expired. Your subscription started on ${startFormatted}, and refunds are only available within 7 days of starting.`
+        error: `Refund window has expired. Your subscription started on ${startFormatted}, and refunds are only available within 7 days of starting.`,
       });
     }
 
     let latestInvoice;
     try {
       if (typeof subscription.latest_invoice === "string") {
-        latestInvoice = await stripe.invoices.retrieve(subscription.latest_invoice);
+        latestInvoice = await stripe.invoices.retrieve(
+          subscription.latest_invoice,
+        );
       } else {
         latestInvoice = subscription.latest_invoice;
       }
 
       if (!latestInvoice || !latestInvoice.payment_intent) {
-        return res.status(400).json({ error: "Could not find the payment to refund. Please contact support." });
+        return res
+          .status(400)
+          .json({
+            error:
+              "Could not find the payment to refund. Please contact support.",
+          });
       }
     } catch (invErr) {
       console.error("REFUND: Invoice retrieval error:", invErr.message);
-      return res.status(500).json({ error: "Could not retrieve payment details." });
+      return res
+        .status(500)
+        .json({ error: "Could not retrieve payment details." });
     }
 
     let refund;
     try {
       refund = await stripe.refunds.create({
-        payment_intent: typeof latestInvoice.payment_intent === "string"
-          ? latestInvoice.payment_intent
-          : latestInvoice.payment_intent.id,
+        payment_intent:
+          typeof latestInvoice.payment_intent === "string"
+            ? latestInvoice.payment_intent
+            : latestInvoice.payment_intent.id,
         reason: "requested_by_customer",
       });
     } catch (refundErr) {
       console.error("REFUND: Stripe refund creation error:", refundErr.message);
-      return res.status(500).json({ error: "Refund failed: " + refundErr.message });
+      return res
+        .status(500)
+        .json({ error: "Refund failed: " + refundErr.message });
     }
 
     try {
       await stripe.subscriptions.cancel(subscription.id);
     } catch (cancelErr) {
-      console.error("REFUND: Subscription cancellation error:", cancelErr.message);
+      console.error(
+        "REFUND: Subscription cancellation error:",
+        cancelErr.message,
+      );
     }
 
     await pool.query(
       "UPDATE users SET subscription_status = 'refunded', is_paid = false WHERE id = $1",
-      [userId]
+      [userId],
     );
 
     await pool.query(
@@ -642,22 +761,35 @@ router.post("/refund", authMiddleware, async (req, res) => {
         refund.amount,
         refund.currency,
         "requested_by_customer",
-        refund.status
-      ]
+        refund.status,
+      ],
     );
 
-    console.log("REFUND: Processed successfully for user:", userId, "Refund ID:", refund.id, "Amount:", refund.amount);
+    console.log(
+      "REFUND: Processed successfully for user:",
+      userId,
+      "Refund ID:",
+      refund.id,
+      "Amount:",
+      refund.amount,
+    );
 
     res.json({
       success: true,
-      message: "Your refund has been processed. The amount will be returned to your original payment method within 5-10 business days.",
+      message:
+        "Your refund has been processed. The amount will be returned to your original payment method within 5-10 business days.",
       refundId: refund.id,
       amount: (refund.amount / 100).toFixed(2),
       currency: refund.currency.toUpperCase(),
     });
   } catch (err) {
     console.error("REFUND ERROR:", err);
-    res.status(500).json({ error: "An unexpected error occurred. Please try again or contact support." });
+    res
+      .status(500)
+      .json({
+        error:
+          "An unexpected error occurred. Please try again or contact support.",
+      });
   }
 });
 
@@ -671,7 +803,7 @@ router.get("/refund-status", authMiddleware, async (req, res) => {
     const userId = req.session.userId;
     const result = await pool.query(
       "SELECT * FROM refunds WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1",
-      [userId]
+      [userId],
     );
     res.json({ refund: result.rows[0] || null });
   } catch (err) {
@@ -682,7 +814,11 @@ router.get("/refund-status", authMiddleware, async (req, res) => {
 
 function escapeHtml(str) {
   if (!str) return "";
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 module.exports = router;

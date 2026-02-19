@@ -91,6 +91,9 @@ router.post("/", async (req, res) => {
     ================================== */
     if (event.type === "invoice.payment_succeeded") {
       const invoice = event.data.object;
+      console.log("Invoice customer:", invoice.customer);
+      console.log("Invoice amount:", invoice.amount_paid);
+      console.log("Invoice period end:", invoice.lines?.data?.[0]?.period?.end);
 
       const customerId = invoice.customer;
       if (!customerId) return res.json({ received: true });
@@ -118,7 +121,7 @@ router.post("/", async (req, res) => {
              current_period_end =
                CASE
                  WHEN $2 IS NOT NULL
-                 THEN TO_TIMESTAMP($2)
+                 THEN TO_TIMESTAMP($2)::timestamp
                  ELSE current_period_end
                END
          WHERE id = $3`,
