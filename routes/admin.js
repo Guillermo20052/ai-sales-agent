@@ -94,14 +94,13 @@ router.get("/", requireAdmin, async (req, res) => {
 
     const leadsResult = await pool.query(
       `SELECT l.id,
-              l.name,
-              l.email,
-              l.phone,
               l.message,
               l.created_at,
+              u.email as user_email,
               bp.business_name
        FROM leads l
-       LEFT JOIN business_profiles bp ON bp.id = l.business_id
+       LEFT JOIN users u ON u.id = l.user_id
+       LEFT JOIN business_profiles bp ON bp.user_id = u.id
        ORDER BY l.created_at DESC
        LIMIT 100`,
     );
@@ -171,10 +170,8 @@ router.get("/", requireAdmin, async (req, res) => {
             (l) => `
         <tr>
           <td>${l.id}</td>
-          <td>${l.name || "—"}</td>
-          <td>${l.email || "—"}</td>
-          <td>${l.phone || "—"}</td>
           <td>${l.business_name || "—"}</td>
+          <td>${l.user_email || "—"}</td>
           <td class="msg-cell">
             ${(l.message || "—").substring(0, 80)}
             ${l.message && l.message.length > 80 ? "..." : ""}
