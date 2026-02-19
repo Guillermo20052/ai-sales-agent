@@ -96,7 +96,7 @@ router.post("/", async (req, res) => {
       if (!customerId) return res.json({ received: true });
 
       const userResult = await pool.query(
-        "SELECT id, lifetime_revenue FROM users WHERE stripe_customer_id = $1",
+        "SELECT id FROM users WHERE stripe_customer_id = $1",
         [customerId],
       );
 
@@ -105,19 +105,14 @@ router.post("/", async (req, res) => {
         return res.json({ received: true });
       }
 
-      const user = userResult.rows[0];
-      const userId = user.id;
+      const userId = userResult.rows[0].id;
 
-      // ✅ Get period end directly from invoice payload
+      // ✅ GET PERIOD END FROM INVOICE LINE (NO STRIPE CALL)
       const periodEnd = invoice.lines?.data?.[0]?.period?.end || null;
-
-      // ✅ Safe revenue calculation (no SQL math)
-      const currentRevenue = Number(user.lifetime_revenue) || 0;
-      const newRevenue = currentRevenue + Number(invoice.amount_paid);
 
       await pool.query(
         `UPDATE users
-         SET lifetime_revenue = $1,
+         SET lifetime_revenue = COALESCE(lifetime_revenue, 0) + $1,
              is_paid = true,
              subscription_status = 'active',
              current_period_end =
@@ -127,7 +122,7 @@ router.post("/", async (req, res) => {
                  ELSE current_period_end
                END
          WHERE id = $3`,
-        [newRevenue, periodEnd, userId],
+        [invoice.amount_paid, periodEnd, userId],
       );
 
       console.log("💰 Renewal processed for user:", userId);
