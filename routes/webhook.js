@@ -118,14 +118,13 @@ router.post("/", async (req, res) => {
          SET lifetime_revenue = COALESCE(lifetime_revenue, 0) + $1,
              is_paid = true,
              subscription_status = 'active',
-             current_period_end =
-               CASE
-                 WHEN $2 IS NOT NULL
-                 THEN TO_TIMESTAMP($2)::timestamp
-                 ELSE current_period_end
-               END
+             current_period_end = TO_TIMESTAMP($2::bigint)
          WHERE id = $3`,
-        [invoice.amount_paid, periodEnd, userId],
+        [
+          invoice.amount_paid,
+          periodEnd || Math.floor(Date.now() / 1000),
+          userId,
+        ],
       );
 
       console.log("💰 Renewal processed for user:", userId);
