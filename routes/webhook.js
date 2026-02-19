@@ -189,8 +189,8 @@ router.post("/", async (req, res) => {
     ================================== */
     res.json({ received: true });
   } catch (err) {
-    console.error("🔥 Webhook processing error:", err);
-    res.status(500).json({ error: "Webhook handler failed" });
+    console.error("🔥 FULL WEBHOOK ERROR:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
