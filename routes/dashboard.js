@@ -1,5 +1,6 @@
 const express = require("express");
 const pool = require("../services/db");
+const { trainWebsite } = require("../services/websiteTrainer");
 const authMiddleware = require("../middleware/authMiddleware");
 const { createCheckoutSession } = require("../services/stripeService");
 const fs = require("fs");
@@ -815,5 +816,64 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
+
+/**
+ * =========================
+ * POST /dashboard/training/website-train
+ * =========================
+ */
+router.post("/training/website-train", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+
+    // Get business profile
+    const bpResult = await pool.query(
+      "SELECT id, website_url FROM business_profiles WHERE user_id = $1",
+      [userId],
+    );
+
+    if (!bpResult.rows.length) {
+      return res.status(400).json({ error: "No business profile found." });
+    }
+
+    const business = bpResult.rows[0];
+
+    if (!business.website_url) {
+      return res.status(400).json({ error: "No website URL set." });
+    }
+
+    // Set status to training
+    await pool.query(
+      "UPDATE business_profiles SET website_training_status = $1 WHERE id = $2",
+      ["training", business.id],
+    );
+
+    const result = await trainWebsite(business.website_url);
+
+    if (!result.success) {
+      await pool.query(
+        "UPDATE business_profiles SET website_training_status = $1 WHERE id = $2",
+        ["failed", business.id],
+      );
+
+      return res.status(500).json({ error: result.error });
+    }
+
+    // Save structured knowledge
+    await pool.query(
+      `UPDATE business_profiles
+       SET website_knowledge = $1,
+           website_training_status = $2,
+           website_last_trained_at = NOW()
+       WHERE id = $3`,
+      [JSON.stringify(result.knowledge), "trained", business.id],
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("WEBSITE TRAIN ERROR:", err);
+    res.status(500).json({ error: "Website training failed." });
+  }
+});
 
 module.exports = router;

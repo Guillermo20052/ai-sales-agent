@@ -6,12 +6,26 @@
     <title>AI Training - AI Sales Agent</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
       body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
         background: #0f1117;
         color: #e1e4e8;
         min-height: 100vh;
@@ -79,7 +93,8 @@
         transition: all 0.2s;
       }
 
-      .topbar-nav-link:hover, .topbar-nav-link.active {
+      .topbar-nav-link:hover,
+      .topbar-nav-link.active {
         color: #fff;
         background: rgba(255, 255, 255, 0.06);
       }
@@ -263,7 +278,9 @@
         margin-left: 8px;
       }
 
-      .form-input, .form-textarea, .form-select {
+      .form-input,
+      .form-textarea,
+      .form-select {
         width: 100%;
         background: #0d0f16;
         border: 1px solid rgba(255, 255, 255, 0.08);
@@ -271,17 +288,22 @@
         padding: 12px 16px;
         font-size: 14px;
         color: #e1e4e8;
-        font-family: 'Inter', sans-serif;
-        transition: border-color 0.2s, box-shadow 0.2s;
+        font-family: "Inter", sans-serif;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
         outline: none;
       }
 
-      .form-input:focus, .form-textarea:focus, .form-select:focus {
+      .form-input:focus,
+      .form-textarea:focus,
+      .form-select:focus {
         border-color: rgba(99, 102, 241, 0.5);
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
       }
 
-      .form-input::placeholder, .form-textarea::placeholder {
+      .form-input::placeholder,
+      .form-textarea::placeholder {
         color: rgba(255, 255, 255, 0.2);
       }
 
@@ -333,7 +355,7 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s;
-        font-family: 'Inter', sans-serif;
+        font-family: "Inter", sans-serif;
         white-space: nowrap;
         display: flex;
         align-items: center;
@@ -368,7 +390,7 @@
         font-weight: 700;
         cursor: pointer;
         transition: all 0.2s;
-        font-family: 'Inter', sans-serif;
+        font-family: "Inter", sans-serif;
         letter-spacing: -0.2px;
       }
 
@@ -401,7 +423,7 @@
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
         transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         z-index: 1000;
-        font-family: 'Inter', sans-serif;
+        font-family: "Inter", sans-serif;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -452,8 +474,12 @@
       }
 
       @keyframes pop-in {
-        0% { transform: scale(0); }
-        100% { transform: scale(1); }
+        0% {
+          transform: scale(0);
+        }
+        100% {
+          transform: scale(1);
+        }
       }
 
       .spinner {
@@ -467,21 +493,49 @@
       }
 
       @keyframes spin {
-        to { transform: rotate(360deg); }
+        to {
+          transform: rotate(360deg);
+        }
       }
 
       @media (max-width: 768px) {
-        .main-container { padding: 24px 16px 60px; }
-        .topbar { padding: 0 16px; }
-        .page-header h1 { font-size: 22px; }
-        .topbar-right { gap: 6px; }
-        .topbar-nav-link { padding: 6px 10px; font-size: 12px; }
-        .url-grid { grid-template-columns: 1fr; }
-        .scrape-row { flex-direction: column; }
-        .btn-scrape { width: 100%; justify-content: center; }
-        .form-actions { flex-direction: column; align-items: stretch; }
-        .btn-save { text-align: center; }
-        .knowledge-status { flex-direction: column; text-align: center; }
+        .main-container {
+          padding: 24px 16px 60px;
+        }
+        .topbar {
+          padding: 0 16px;
+        }
+        .page-header h1 {
+          font-size: 22px;
+        }
+        .topbar-right {
+          gap: 6px;
+        }
+        .topbar-nav-link {
+          padding: 6px 10px;
+          font-size: 12px;
+        }
+        .url-grid {
+          grid-template-columns: 1fr;
+        }
+        .scrape-row {
+          flex-direction: column;
+        }
+        .btn-scrape {
+          width: 100%;
+          justify-content: center;
+        }
+        .form-actions {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .btn-save {
+          text-align: center;
+        }
+        .knowledge-status {
+          flex-direction: column;
+          text-align: center;
+        }
       }
     </style>
   </head>
@@ -496,30 +550,48 @@
       </div>
       <div class="topbar-right">
         <a href="/dashboard" class="topbar-nav-link">Leads</a>
-        <a href="/dashboard/training" class="topbar-nav-link active">AI Training</a>
-        <a href="/dashboard/conversations" class="topbar-nav-link">Conversations</a>
+        <a href="/dashboard/training" class="topbar-nav-link active"
+          >AI Training</a
+        >
+        <a href="/dashboard/conversations" class="topbar-nav-link"
+          >Conversations</a
+        >
         <a href="/dashboard/install" class="topbar-nav-link">Install</a>
         <div class="topbar-status {{statusClass}}">
           <span class="status-dot"></span>
           <span>{{statusText}}</span>
         </div>
-        <a href="/logout" class="topbar-nav-link" style="color:rgba(255,255,255,0.4);">Logout</a>
+        <a
+          href="/logout"
+          class="topbar-nav-link"
+          style="color: rgba(255, 255, 255, 0.4)"
+          >Logout</a
+        >
       </div>
     </nav>
 
     <main class="main-container">
       <div class="page-header">
         <h1>AI Training</h1>
-        <p class="page-header-sub">Train your AI agent with your business information. The more detail you provide, the better your agent will perform.</p>
+        <p class="page-header-sub">
+          Train your AI agent with your business information. The more detail
+          you provide, the better your agent will perform.
+        </p>
       </div>
 
       <div class="knowledge-status" id="knowledgeStatus">
-        <div class="knowledge-status-icon {{knowledgeIconClass}}">{{knowledgeIcon}}</div>
+        <div class="knowledge-status-icon {{knowledgeIconClass}}">
+          {{knowledgeIcon}}
+        </div>
         <div class="knowledge-status-info">
           <div class="knowledge-status-label">Agent Knowledge Status</div>
-          <div class="knowledge-status-sub" id="knowledgeStatusSub">{{knowledgeStatusText}}</div>
+          <div class="knowledge-status-sub" id="knowledgeStatusSub">
+            {{knowledgeStatusText}}
+          </div>
         </div>
-        <div class="knowledge-badge {{knowledgeBadgeClass}}">{{knowledgeBadgeText}}</div>
+        <div class="knowledge-badge {{knowledgeBadgeClass}}">
+          {{knowledgeBadgeText}}
+        </div>
       </div>
 
       <form id="trainingForm" autocomplete="off">
@@ -529,20 +601,62 @@
           </div>
           <div class="card-body">
             <div class="form-group">
-              <label class="form-label">Business Description <span class="form-label-hint">What does your business do?</span></label>
-              <textarea class="form-textarea" name="description" placeholder="e.g. We are a premium dental clinic in downtown Miami offering cosmetic dentistry, implants, and general dental care...">{{description}}</textarea>
+              <label class="form-label"
+                >Business Description
+                <span class="form-label-hint"
+                  >What does your business do?</span
+                ></label
+              >
+              <textarea
+                class="form-textarea"
+                name="description"
+                placeholder="e.g. We are a premium dental clinic in downtown Miami offering cosmetic dentistry, implants, and general dental care..."
+              >
+{{description}}</textarea
+              >
             </div>
             <div class="form-group">
-              <label class="form-label">Services Offered <span class="form-label-hint">List all services</span></label>
-              <textarea class="form-textarea" name="services" placeholder="e.g. Teeth Whitening - $299&#10;Dental Implants - Starting at $1,500&#10;Root Canal Treatment - $800&#10;General Checkup - $150">{{services}}</textarea>
+              <label class="form-label"
+                >Services Offered
+                <span class="form-label-hint">List all services</span></label
+              >
+              <textarea
+                class="form-textarea"
+                name="services"
+                placeholder="e.g. Teeth Whitening - $299&#10;Dental Implants - Starting at $1,500&#10;Root Canal Treatment - $800&#10;General Checkup - $150"
+              >
+{{services}}</textarea
+              >
             </div>
             <div class="form-group">
-              <label class="form-label">Pricing Details <span class="form-label-hint">Share your pricing structure</span></label>
-              <textarea class="form-textarea" name="pricing" placeholder="e.g. We offer competitive pricing with flexible payment plans. Free consultations for new patients. Insurance accepted.">{{pricing}}</textarea>
+              <label class="form-label"
+                >Pricing Details
+                <span class="form-label-hint"
+                  >Share your pricing structure</span
+                ></label
+              >
+              <textarea
+                class="form-textarea"
+                name="pricing"
+                placeholder="e.g. We offer competitive pricing with flexible payment plans. Free consultations for new patients. Insurance accepted."
+              >
+{{pricing}}</textarea
+              >
             </div>
             <div class="form-group">
-              <label class="form-label">FAQs <span class="form-label-hint">Common questions your customers ask</span></label>
-              <textarea class="form-textarea" name="faqs" placeholder="Q: Do you accept walk-ins?&#10;A: Yes, but appointments are recommended.&#10;&#10;Q: What are your hours?&#10;A: Monday-Friday 9am-6pm, Saturday 10am-2pm">{{faqs}}</textarea>
+              <label class="form-label"
+                >FAQs
+                <span class="form-label-hint"
+                  >Common questions your customers ask</span
+                ></label
+              >
+              <textarea
+                class="form-textarea"
+                name="faqs"
+                placeholder="Q: Do you accept walk-ins?&#10;A: Yes, but appointments are recommended.&#10;&#10;Q: What are your hours?&#10;A: Monday-Friday 9am-6pm, Saturday 10am-2pm"
+              >
+{{faqs}}</textarea
+              >
             </div>
           </div>
         </div>
@@ -562,8 +676,19 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">What the AI should NEVER say <span class="form-label-hint">Topics, phrases, or competitors to avoid</span></label>
-              <textarea class="form-textarea" name="restrictions" placeholder="e.g. Never mention competitor names. Never discuss refund policies. Never promise specific results.">{{restrictions}}</textarea>
+              <label class="form-label"
+                >What the AI should NEVER say
+                <span class="form-label-hint"
+                  >Topics, phrases, or competitors to avoid</span
+                ></label
+              >
+              <textarea
+                class="form-textarea"
+                name="restrictions"
+                placeholder="e.g. Never mention competitor names. Never discuss refund policies. Never promise specific results."
+              >
+{{restrictions}}</textarea
+              >
             </div>
           </div>
         </div>
@@ -573,23 +698,104 @@
             <h2>Online Presence</h2>
           </div>
           <div class="card-body">
-            <div class="scrape-row" style="margin-bottom: 24px;">
-              <div class="form-group">
-                <label class="form-label">Website URL <span class="form-label-hint">We can auto-import content from your website</span></label>
-                <input type="url" class="form-input" name="website_url" placeholder="https://yourbusiness.com" value="{{website_url}}" />
+            <hr
+              style="
+                border: none;
+                border-top: 1px solid rgba(255, 255, 255, 0.06);
+                margin: 28px 0;
+              "
+            />
+
+            <div>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  margin-bottom: 12px;
+                "
+              >
+                <h3 style="font-size: 15px; font-weight: 700; color: #fff">
+                  AI Website Auto-Training
+                </h3>
+                <span
+                  id="websiteTrainStatusBadge"
+                  class="knowledge-badge untrained"
+                >
+                  NOT TRAINED
+                </span>
               </div>
-              <button type="button" class="btn-scrape" id="scrapeBtn" onclick="scrapeWebsite()">
+
+              <p
+                style="
+                  font-size: 13px;
+                  color: rgba(255, 255, 255, 0.4);
+                  margin-bottom: 16px;
+                "
+              >
+                This will automatically analyze your homepage and structure your
+                business knowledge for your AI agent.
+              </p>
+
+              <button
+                type="button"
+                class="btn-save"
+                id="websiteTrainBtn"
+                style="padding: 12px 24px; font-size: 14px"
+              >
+                Train AI From Website
+              </button>
+
+              <div
+                id="websiteTrainMessage"
+                style="margin-top: 14px; font-size: 13px"
+              ></div>
+            </div>
+            <div class="scrape-row" style="margin-bottom: 24px">
+              <div class="form-group">
+                <label class="form-label"
+                  >Website URL
+                  <span class="form-label-hint"
+                    >We can auto-import content from your website</span
+                  ></label
+                >
+                <input
+                  type="url"
+                  class="form-input"
+                  name="website_url"
+                  placeholder="https://yourbusiness.com"
+                  value="{{website_url}}"
+                />
+              </div>
+              <button
+                type="button"
+                class="btn-scrape"
+                id="scrapeBtn"
+                onclick="scrapeWebsite()"
+              >
                 <span id="scrapeBtnText">Import</span>
               </button>
             </div>
             <div class="url-grid">
               <div class="form-group">
                 <label class="form-label">Instagram URL</label>
-                <input type="url" class="form-input" name="instagram_url" placeholder="https://instagram.com/yourbusiness" value="{{instagram_url}}" />
+                <input
+                  type="url"
+                  class="form-input"
+                  name="instagram_url"
+                  placeholder="https://instagram.com/yourbusiness"
+                  value="{{instagram_url}}"
+                />
               </div>
               <div class="form-group">
                 <label class="form-label">Facebook URL</label>
-                <input type="url" class="form-input" name="facebook_url" placeholder="https://facebook.com/yourbusiness" value="{{facebook_url}}" />
+                <input
+                  type="url"
+                  class="form-input"
+                  name="facebook_url"
+                  placeholder="https://facebook.com/yourbusiness"
+                  value="{{facebook_url}}"
+                />
               </div>
             </div>
           </div>
@@ -597,8 +803,12 @@
 
         <div class="form-actions">
           <div>
-            <button type="submit" class="btn-save" id="saveBtn">Save Training Data</button>
-            <span class="save-animation" id="saveSuccess"><span class="checkmark">&#10003;</span> Saved successfully</span>
+            <button type="submit" class="btn-save" id="saveBtn">
+              Save Training Data
+            </button>
+            <span class="save-animation" id="saveSuccess"
+              ><span class="checkmark">&#10003;</span> Saved successfully</span
+            >
           </div>
           <div class="last-updated" id="lastUpdated">{{lastUpdated}}</div>
         </div>
@@ -608,9 +818,12 @@
     <div class="toast" id="toast"></div>
 
     <script>
+      // ==============================
+      // Set Current Tone
+      // ==============================
       var currentTone = "{{currentTone}}";
       if (currentTone) {
-        var sel = document.getElementById('toneSelect');
+        var sel = document.getElementById("toneSelect");
         for (var i = 0; i < sel.options.length; i++) {
           if (sel.options[i].value === currentTone) {
             sel.selectedIndex = i;
@@ -619,105 +832,171 @@
         }
       }
 
-      document.getElementById('trainingForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        var btn = document.getElementById('saveBtn');
-        var successEl = document.getElementById('saveSuccess');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner"></span> Saving...';
-        successEl.classList.remove('show');
+      // ==============================
+      // Save Manual Training
+      // ==============================
+      document
+        .getElementById("trainingForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
 
-        var formData = {
-          description: this.description.value,
-          services: this.services.value,
-          pricing: this.pricing.value,
-          faqs: this.faqs.value,
-          tone: this.tone.value,
-          website_url: this.website_url.value,
-          instagram_url: this.instagram_url.value,
-          facebook_url: this.facebook_url.value,
-          restrictions: this.restrictions.value
-        };
+          var btn = document.getElementById("saveBtn");
+          var successEl = document.getElementById("saveSuccess");
 
-        try {
-          var res = await fetch('/dashboard/training', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-          });
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner"></span> Saving...';
+          successEl.classList.remove("show");
 
-          if (res.status === 401) {
-            window.location.href = '/login.html';
-            return;
+          var formData = {
+            description: this.description.value,
+            services: this.services.value,
+            pricing: this.pricing.value,
+            faqs: this.faqs.value,
+            tone: this.tone.value,
+            website_url: this.website_url.value,
+            instagram_url: this.instagram_url.value,
+            facebook_url: this.facebook_url.value,
+            restrictions: this.restrictions.value,
+          };
+
+          try {
+            var res = await fetch("/dashboard/training", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
+
+            if (res.status === 401) {
+              window.location.href = "/login.html";
+              return;
+            }
+
+            var data = await res.json();
+
+            if (data.success) {
+              showToast("Training data saved successfully!", "success");
+              successEl.classList.add("show");
+              document.getElementById("lastUpdated").textContent =
+                "Last updated: Just now";
+
+              var statusIcon = document.querySelector(".knowledge-status-icon");
+              statusIcon.className = "knowledge-status-icon trained";
+              statusIcon.textContent = "🤖";
+
+              var badge = document.querySelector(".knowledge-badge");
+              badge.className = "knowledge-badge trained";
+              badge.textContent = "TRAINED";
+
+              setTimeout(function () {
+                successEl.classList.remove("show");
+              }, 3000);
+            } else {
+              showToast(data.error || "Failed to save", "error");
+            }
+          } catch (err) {
+            showToast("Connection error. Please try again.", "error");
           }
 
-          var data = await res.json();
-          if (data.success) {
-            showToast('Training data saved successfully!', 'success');
-            successEl.classList.add('show');
-            document.getElementById('lastUpdated').textContent = 'Last updated: Just now';
+          btn.disabled = false;
+          btn.textContent = "Save Training Data";
+        });
 
-            var statusIcon = document.querySelector('.knowledge-status-icon');
-            statusIcon.className = 'knowledge-status-icon trained';
-            statusIcon.textContent = '\uD83E\uDD16';
-            document.getElementById('knowledgeStatusSub').textContent = 'Your AI agent is trained with your business data';
-            var badge = document.querySelector('.knowledge-badge');
-            badge.className = 'knowledge-badge trained';
-            badge.textContent = 'TRAINED';
-
-            setTimeout(function() { successEl.classList.remove('show'); }, 3000);
-          } else {
-            showToast(data.error || 'Failed to save', 'error');
-          }
-        } catch (err) {
-          showToast('Connection error. Please try again.', 'error');
-        }
-
-        btn.disabled = false;
-        btn.textContent = 'Save Training Data';
-      });
-
+      // ==============================
+      // Scrape Website (Raw Import)
+      // ==============================
       async function scrapeWebsite() {
         var urlInput = document.querySelector('input[name="website_url"]');
         var url = urlInput.value.trim();
+
         if (!url) {
-          showToast('Please enter a website URL first', 'error');
+          showToast("Please enter a website URL first", "error");
           return;
         }
 
-        var btn = document.getElementById('scrapeBtn');
+        var btn = document.getElementById("scrapeBtn");
         btn.disabled = true;
-        document.getElementById('scrapeBtnText').innerHTML = '<span class="spinner"></span>';
+        document.getElementById("scrapeBtnText").innerHTML =
+          '<span class="spinner"></span>';
 
         try {
-          var res = await fetch('/dashboard/scrape', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: url })
+          var res = await fetch("/dashboard/scrape", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: url }),
           });
 
           var data = await res.json();
+
           if (data.success) {
-            document.querySelector('textarea[name="description"]').value = data.content;
-            showToast('Website content imported! Review and save.', 'info');
+            document.querySelector('textarea[name="description"]').value =
+              data.content;
+            showToast("Website content imported! Review and save.", "info");
           } else {
-            showToast(data.error || 'Could not scrape website', 'error');
+            showToast(data.error || "Could not scrape website", "error");
           }
         } catch (err) {
-          showToast('Connection error. Please try again.', 'error');
+          showToast("Connection error. Please try again.", "error");
         }
 
         btn.disabled = false;
-        document.getElementById('scrapeBtnText').textContent = 'Import';
+        document.getElementById("scrapeBtnText").textContent = "Import";
       }
 
+      // ==============================
+      // AI Website Structured Training
+      // ==============================
+      document
+        .getElementById("websiteTrainBtn")
+        ?.addEventListener("click", async function () {
+          var btn = this;
+          var badge = document.getElementById("websiteTrainStatusBadge");
+          var message = document.getElementById("websiteTrainMessage");
+
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner"></span> Training...';
+          badge.className = "knowledge-badge untrained";
+          badge.textContent = "TRAINING";
+          message.textContent = "";
+          message.style.color = "";
+
+          try {
+            var res = await fetch("/dashboard/training/website-train", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+            });
+
+            var data = await res.json();
+
+            if (!res.ok) {
+              throw new Error(data.error || "Training failed");
+            }
+
+            badge.className = "knowledge-badge trained";
+            badge.textContent = "TRAINED";
+            message.textContent = "Website training completed successfully.";
+            message.style.color = "#34d399";
+          } catch (err) {
+            badge.className = "knowledge-badge untrained";
+            badge.textContent = "FAILED";
+            message.textContent = err.message;
+            message.style.color = "#f87171";
+          }
+
+          btn.disabled = false;
+          btn.textContent = "Train AI From Website";
+        });
+
+      // ==============================
+      // Toast
+      // ==============================
       function showToast(message, type) {
-        var toast = document.getElementById('toast');
+        var toast = document.getElementById("toast");
         toast.textContent = message;
-        toast.className = 'toast ' + (type || 'success');
-        toast.classList.add('show');
-        setTimeout(function() {
-          toast.classList.remove('show');
+        toast.className = "toast " + (type || "success");
+        toast.classList.add("show");
+
+        setTimeout(function () {
+          toast.classList.remove("show");
         }, 3500);
       }
     </script>
