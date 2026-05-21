@@ -3,276 +3,264 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Portal - AI Sales Agent</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: "Inter", sans-serif;
-        background: #0f1117;
-        color: #e1e4e8;
-        min-height: 100vh;
-      }
-
-      .top-bar {
-        background: #161822;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        padding: 16px 32px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .top-bar h1 {
-        font-size: 18px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      .top-bar .nav-links {
-        display: flex;
-        gap: 16px;
-      }
-
-      .top-bar a {
-        color: rgba(255, 255, 255, 0.5);
-        text-decoration: none;
-        font-size: 13px;
-        font-weight: 500;
-      }
-
-      .top-bar a:hover {
-        color: #fff;
-      }
-
-      .container {
-        max-width: 1300px;
-        margin: 0 auto;
-        padding: 40px 24px;
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 20px;
-        margin-bottom: 50px;
-      }
-
-      .stat-card {
-        background: #161822;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 16px;
-        padding: 24px;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .stat-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #6366f1, #8b5cf6);
-      }
-
-      .stat-label {
-        font-size: 12px;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.4);
-        text-transform: uppercase;
-        margin-bottom: 10px;
-        letter-spacing: 0.8px;
-      }
-
-      .stat-value {
-        font-size: 30px;
-        font-weight: 800;
-        color: #fff;
-      }
-
-      .section-title {
-        font-size: 18px;
-        font-weight: 700;
-        margin-bottom: 16px;
-        margin-top: 20px;
-      }
-
-      .table-wrapper {
-        background: #161822;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 16px;
-        overflow: hidden;
-        margin-bottom: 40px;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      th {
-        background: #0d0f16;
-        padding: 12px 16px;
-        text-align: left;
-        font-size: 11px;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.4);
-        text-transform: uppercase;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      }
-
-      td {
-        padding: 12px 16px;
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.7);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      }
-
-      tr:hover td {
-        background: rgba(255, 255, 255, 0.03);
-      }
-
-      .msg-cell {
-        max-width: 200px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .badge {
-        display: inline-block;
-        padding: 4px 10px;
-        border-radius: 100px;
-        font-size: 11px;
-        font-weight: 600;
-      }
-
-      .badge-admin {
-        background: rgba(245, 158, 11, 0.15);
-        color: #fbbf24;
-        border: 1px solid rgba(245, 158, 11, 0.2);
-      }
-
-      .badge-user {
-        background: rgba(99, 102, 241, 0.12);
-        color: #a5b4fc;
-        border: 1px solid rgba(99, 102, 241, 0.2);
-      }
-
-      .badge-active {
-        background: rgba(16, 185, 129, 0.12);
-        color: #34d399;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-      }
-
-      .badge-inactive {
-        background: rgba(255, 255, 255, 0.06);
-        color: rgba(255, 255, 255, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-
-      @media (max-width: 900px) {
-        .table-wrapper {
-          overflow-x: auto;
-        }
-        table {
-          min-width: 800px;
-        }
-      }
-    </style>
+    <title>Overview - Admin Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
   </head>
-
   <body>
-    <div class="top-bar">
-      <h1>Founder Admin Portal</h1>
-      <div class="nav-links">
-        <a href="/dashboard">Dashboard</a>
-        <a href="/logout">Logout</a>
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-header"><h1>Admin Portal</h1></div>
+        <nav class="admin-sidebar-nav">
+          <a href="/internal-admin-portal-93847" class="active"><span class="nav-icon">&#9673;</span> <span>Overview</span></a>
+          <a href="/internal-admin-portal-93847/users"><span class="nav-icon">&#9823;</span> <span>Users</span></a>
+          <a href="/internal-admin-portal-93847/revenue"><span class="nav-icon">&#36;</span> <span>Revenue</span></a>
+          <a href="/internal-admin-portal-93847/refunds"><span class="nav-icon">&#8634;</span> <span>Refunds</span></a>
+          <a href="/internal-admin-portal-93847/admin-logs"><span class="nav-icon">&#9776;</span> <span>Logs</span></a>
+        </nav>
+        <div class="admin-sidebar-footer"><a href="/logout"><span class="nav-icon">&#10132;</span> <span>Logout</span></a></div>
+      </aside>
+
+      <main class="admin-main">
+      <div class="admin-metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Total Users</span>
+            <span class="metric-icon">&#9823;</span>
+          </div>
+          <div class="metric-value">{{TOTAL_USERS}}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Active Subscriptions</span>
+            <span class="metric-icon">&#9889;</span>
+          </div>
+          <div class="metric-value">{{ACTIVE_SUBSCRIPTIONS}}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Monthly Recurring Revenue</span>
+            <span class="metric-icon">&#8599;</span>
+          </div>
+          <div class="metric-value revenue">${{ESTIMATED_MRR}}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Lifetime Revenue</span>
+            <span class="metric-icon">&#9670;</span>
+          </div>
+          <div class="metric-value revenue">${{LIFETIME_REVENUE}}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Total Refunds</span>
+            <span class="metric-icon">&#8634;</span>
+          </div>
+          <div class="metric-value">{{TOTAL_REFUNDS}}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Refund Rate</span>
+            <span class="metric-icon">&#9888;</span>
+          </div>
+          <div class="metric-value">{{REFUND_RATE}}%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">ARPU</span>
+            <span class="metric-icon">&#9733;</span>
+          </div>
+          <div class="metric-value revenue">${{ARPU}}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Churn Rate</span>
+            <span class="metric-icon">&#8681;</span>
+          </div>
+          <div class="metric-value">{{CHURN_RATE}}%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-label">Revenue Growth</span>
+            <span class="metric-icon">&#9650;</span>
+          </div>
+          <div class="metric-value revenue">{{GROWTH_RATE}}%</div>
+        </div>
       </div>
+
+      <div class="chart-card">
+        <h3>Revenue</h3>
+        <div class="chart-wrapper">
+          <canvas id="revenueChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>New Users (Last 12 Months)</h3>
+        <div class="chart-wrapper">
+          <canvas id="newUsersChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>MRR Trend</h3>
+        <div class="chart-wrapper">
+          <canvas id="mrrTrendChart"></canvas>
+        </div>
+      </div>
+      </main>
     </div>
 
-    <div class="container">
-      <!-- STATS -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total Users</div>
-          <div class="stat-value">{{TOTAL_USERS}}</div>
-        </div>
+    <script>
+    (function () {
+      var BASE = "/internal-admin-portal-93847";
 
-        <div class="stat-card">
-          <div class="stat-label">Active Subscriptions</div>
-          <div class="stat-value">{{ACTIVE_SUBSCRIPTIONS}}</div>
-        </div>
+      var chartDefaults = {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { intersect: false, mode: "index" },
+        plugins: {
+          legend: {
+            display: true, position: "top", align: "end",
+            labels: { color: "rgba(255,255,255,0.5)", font: { family: "'Inter', sans-serif", size: 12 }, boxWidth: 12, padding: 16 }
+          },
+          tooltip: {
+            backgroundColor: "#18181b", titleColor: "#fafafa", bodyColor: "#a1a1aa",
+            borderColor: "rgba(255,255,255,0.08)", borderWidth: 1, padding: 12,
+            bodyFont: { family: "'Inter', sans-serif" }
+          }
+        },
+        scales: {
+          x: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "rgba(255,255,255,0.4)", font: { family: "'Inter', sans-serif", size: 11 } } },
+          y: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "rgba(255,255,255,0.4)", font: { family: "'Inter', sans-serif", size: 11 } } }
+        }
+      };
 
-        <div class="stat-card">
-          <div class="stat-label">Monthly Recurring Revenue</div>
-          <div class="stat-value">${{ESTIMATED_MRR}}</div>
-        </div>
+      function monthLabel(iso) {
+        var parts = iso.split("-");
+        var date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1);
+        return date.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+      }
 
-        <div class="stat-card">
-          <div class="stat-label">Lifetime Revenue</div>
-          <div class="stat-value">${{LIFETIME_REVENUE}}</div>
-        </div>
+      /* ---- REVENUE CHART (existing) ---- */
+      async function loadRevenueChart() {
+        try {
+          var res = await fetch(BASE + "/revenue-chart");
+          var data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Failed to load chart.");
+          var labels = data.map(function (d) { return monthLabel(d.month); });
+          var revenue = data.map(function (d) { return d.revenue; });
+          var refunds = data.map(function (d) { return d.refunds; });
 
-        <div class="stat-card">
-          <div class="stat-label">Total Leads</div>
-          <div class="stat-value">{{TOTAL_LEADS}}</div>
-        </div>
-      </div>
+          new Chart(document.getElementById("revenueChart").getContext("2d"), {
+            type: "bar",
+            data: {
+              labels: labels,
+              datasets: [
+                { label: "Revenue", data: revenue, backgroundColor: "rgba(255,255,255,0.15)", borderColor: "rgba(255,255,255,0.6)", borderWidth: 1, borderRadius: 4, order: 2 },
+                { label: "Refunds", data: refunds, backgroundColor: "rgba(251,191,36,0.25)", borderColor: "rgba(251,191,36,0.6)", borderWidth: 1, borderRadius: 4, order: 1 }
+              ]
+            },
+            options: Object.assign({}, chartDefaults, {
+              plugins: Object.assign({}, chartDefaults.plugins, {
+                tooltip: Object.assign({}, chartDefaults.plugins.tooltip, {
+                  callbacks: { label: function (c) { return c.dataset.label + ": $" + c.parsed.y.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } }
+                })
+              }),
+              scales: Object.assign({}, chartDefaults.scales, {
+                y: Object.assign({}, chartDefaults.scales.y, {
+                  ticks: Object.assign({}, chartDefaults.scales.y.ticks, { callback: function (v) { return "$" + v.toLocaleString(); } })
+                })
+              })
+            })
+          });
+        } catch (err) { console.error("Revenue chart error:", err); }
+      }
 
-      <!-- USERS -->
-      <div class="section-title">User Management</div>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Email</th>
-              <th>Business</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Amount</th>
-              <th>Billing</th>
-              <th>Verified</th>
-              <th>Joined</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{USERS_TABLE_ROWS}}
-          </tbody>
-        </table>
-      </div>
+      /* ---- NEW USERS CHART ---- */
+      async function loadNewUsersChart() {
+        try {
+          var res = await fetch(BASE + "/api/new-users");
+          var data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Failed to load new users.");
+          var labels = data.map(function (d) { return monthLabel(d.month); });
+          var values = data.map(function (d) { return d.new_users; });
 
-      <!-- LEADS -->
-      <div class="section-title">Recent Leads</div>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Business</th>
-              <th>User Email</th>
-              <th>Message</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{LEADS_TABLE_ROWS}}
-          </tbody>
-        </table>
-      </div>
-    </div>
+          new Chart(document.getElementById("newUsersChart").getContext("2d"), {
+            type: "line",
+            data: {
+              labels: labels,
+              datasets: [{
+                label: "New Users",
+                data: values,
+                borderColor: "rgba(96, 165, 250, 0.8)",
+                backgroundColor: "rgba(96, 165, 250, 0.1)",
+                borderWidth: 2,
+                pointBackgroundColor: "rgba(96, 165, 250, 1)",
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                tension: 0.3,
+                fill: true
+              }]
+            },
+            options: Object.assign({}, chartDefaults, {
+              scales: Object.assign({}, chartDefaults.scales, {
+                y: Object.assign({}, chartDefaults.scales.y, {
+                  ticks: Object.assign({}, chartDefaults.scales.y.ticks, { stepSize: 1 })
+                })
+              })
+            })
+          });
+        } catch (err) { console.error("New users chart error:", err); }
+      }
+
+      /* ---- MRR TREND CHART ---- */
+      async function loadMrrTrendChart() {
+        try {
+          var res = await fetch(BASE + "/api/mrr-trend");
+          var data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Failed to load MRR trend.");
+          var labels = data.map(function (d) { return monthLabel(d.month); });
+          var values = data.map(function (d) { return d.mrr; });
+
+          new Chart(document.getElementById("mrrTrendChart").getContext("2d"), {
+            type: "line",
+            data: {
+              labels: labels,
+              datasets: [{
+                label: "MRR",
+                data: values,
+                borderColor: "rgba(34, 197, 94, 0.8)",
+                backgroundColor: "rgba(34, 197, 94, 0.1)",
+                borderWidth: 2,
+                pointBackgroundColor: "rgba(34, 197, 94, 1)",
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                tension: 0.3,
+                fill: true
+              }]
+            },
+            options: Object.assign({}, chartDefaults, {
+              plugins: Object.assign({}, chartDefaults.plugins, {
+                tooltip: Object.assign({}, chartDefaults.plugins.tooltip, {
+                  callbacks: { label: function (c) { return "MRR: $" + c.parsed.y.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } }
+                })
+              }),
+              scales: Object.assign({}, chartDefaults.scales, {
+                y: Object.assign({}, chartDefaults.scales.y, {
+                  ticks: Object.assign({}, chartDefaults.scales.y.ticks, { callback: function (v) { return "$" + v.toLocaleString(); } })
+                })
+              })
+            })
+          });
+        } catch (err) { console.error("MRR trend chart error:", err); }
+      }
+
+      loadRevenueChart();
+      loadNewUsersChart();
+      loadMrrTrendChart();
+    })();
+    </script>
   </body>
 </html>

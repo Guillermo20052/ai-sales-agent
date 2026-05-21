@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Logs - Admin Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-header"><h1>Admin Portal</h1></div>
+        <nav class="admin-sidebar-nav">
+          <a href="/internal-admin-portal-93847"><span class="nav-icon">&#9673;</span> <span>Overview</span></a>
+          <a href="/internal-admin-portal-93847/users"><span class="nav-icon">&#9823;</span> <span>Users</span></a>
+          <a href="/internal-admin-portal-93847/revenue"><span class="nav-icon">&#36;</span> <span>Revenue</span></a>
+          <a href="/internal-admin-portal-93847/refunds"><span class="nav-icon">&#8634;</span> <span>Refunds</span></a>
+          <a href="/internal-admin-portal-93847/admin-logs" class="active"><span class="nav-icon">&#9776;</span> <span>Logs</span></a>
+          <a href="/internal-admin-portal-93847/agent-logs"><span class="nav-icon">&#128172;</span> <span>Agent Logs</span></a>
+        </nav>
+        <div class="admin-sidebar-footer"><a href="/logout"><span class="nav-icon">&#10132;</span> <span>Logout</span></a></div>
+      </aside>
+
+      <main class="admin-main">
+      <div class="admin-page-title">Admin Action Log</div>
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Admin</th>
+              <th>Action</th>
+              <th>Target User</th>
+              <th>Metadata</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="logsTableBody">
+            {{LOG_ROWS}}
+          </tbody>
+        </table>
+      </div>
+      </main>
+    </div>
+  </body>
+</html>

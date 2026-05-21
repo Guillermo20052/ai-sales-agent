@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Sales - AI Sales Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <nav class="nav">
+      <a href="/" class="nav-brand">
+        <div class="nav-logo">AI</div>
+        <span class="nav-name">AI Sales Agent</span>
+      </a>
+      <div class="nav-links">
+        <a href="/#features" class="nav-link">Features</a>
+        <a href="/#pricing" class="nav-link">Pricing</a>
+        <a href="/about" class="nav-link">About</a>
+        <a href="/contact-sales" class="nav-link">Contact Sales</a>
+        <a href="/login.html" class="nav-link">Login</a>
+        <a href="/signup" class="nav-link">Sign Up</a>
+        <a href="/signup" class="nav-link primary">Start Free Trial</a>
+      </div>
+    </nav>
+
+    <div class="content">
+      <h1>Contact Sales</h1>
+      <p class="section-desc">Tell us about your business and we'll get back to you.</p>
+
+      <div id="successMessage" class="section-message success" style="display: none;"></div>
+
+      <form method="post" action="/contact-sales" id="contactForm">
+        <div class="form-group">
+          <label class="form-label" for="name">Name</label>
+          <input class="form-input" type="text" id="name" name="name" placeholder="Your name" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="businessName">Business Name</label>
+          <input class="form-input" type="text" id="businessName" name="businessName" placeholder="Your company" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input class="form-input" type="email" id="email" name="email" placeholder="you@company.com" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="website">Website</label>
+          <input class="form-input" type="url" id="website" name="website" placeholder="https://" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="message">Message</label>
+          <textarea class="form-input form-textarea" id="message" name="message" placeholder="How can we help?" rows="4"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+      </form>
+
+      <p class="section-desc" style="margin-top: var(--space-6); margin-bottom: var(--space);">
+        <a href="mailto:aisales@aiagentproperties.com" class="link">aisales@aiagentproperties.com</a>
+      </p>
+      <p class="section-desc" style="font-size: 13px; color: var(--text-muted-2);">
+        Managed by <a href="https://aiagentproperties.com" target="_blank" rel="noopener noreferrer" class="link">aiagentproperties.com</a>
+      </p>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-brand">
+        <div class="footer-logo">AI</div>
+        <span class="footer-name">AI Sales Agent</span>
+      </div>
+      <div class="footer-links">
+        <a href="/#features" class="footer-link">Features</a>
+        <a href="/#pricing" class="footer-link">Pricing</a>
+        <a href="/about" class="footer-link">About</a>
+        <a href="/contact-sales" class="footer-link">Contact Sales</a>
+        <a href="/login.html" class="footer-link">Login</a>
+        <a href="/terms" class="footer-link">Terms</a>
+        <a href="/privacy" class="footer-link">Privacy</a>
+      </div>
+    </footer>
+
+    <script>
+      (function() {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('success') === '1') {
+          var el = document.getElementById('successMessage');
+          if (el) {
+            el.textContent = 'Thanks for reaching out. We\'ll be in touch soon.';
+            el.style.display = 'block';
+          }
+        }
+      })();
+    </script>
+    <script src="/site-agent.js"></script>
+  </body>
+</html>

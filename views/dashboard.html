@@ -10,741 +10,11 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <style>
-      *,
-      *::before,
-      *::after {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family:
-          "Inter",
-          -apple-system,
-          BlinkMacSystemFont,
-          "Segoe UI",
-          sans-serif;
-        background: #0f1117;
-        color: #e1e4e8;
-        min-height: 100vh;
-      }
-
-      .topbar {
-        background: rgba(15, 17, 23, 0.8);
-        backdrop-filter: blur(20px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        padding: 0 32px;
-        height: 64px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-      }
-
-      .topbar-brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .topbar-logo {
-        width: 36px;
-        height: 36px;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        font-weight: 700;
-        color: white;
-      }
-
-      .topbar-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: #fff;
-        letter-spacing: -0.3px;
-      }
-
-      .topbar-subtitle {
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.4);
-        font-weight: 500;
-      }
-
-      .topbar-right {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .topbar-nav-link {
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.5);
-        text-decoration: none;
-        transition: all 0.2s;
-      }
-
-      .topbar-nav-link:hover,
-      .topbar-nav-link.active {
-        color: #fff;
-        background: rgba(255, 255, 255, 0.06);
-      }
-
-      .topbar-status {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 14px;
-        border-radius: 100px;
-        font-size: 13px;
-        font-weight: 600;
-      }
-
-      .topbar-status.active {
-        background: rgba(16, 185, 129, 0.12);
-        color: #34d399;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-      }
-
-      .topbar-status.inactive {
-        background: rgba(239, 68, 68, 0.12);
-        color: #f87171;
-        border: 1px solid rgba(239, 68, 68, 0.2);
-      }
-
-      .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-      }
-
-      .active .status-dot {
-        background: #34d399;
-        box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
-      }
-
-      .inactive .status-dot {
-        background: #f87171;
-        box-shadow: 0 0 8px rgba(248, 113, 113, 0.5);
-      }
-
-      .main-container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 40px 24px 80px;
-      }
-
-      .page-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 32px;
-        flex-wrap: wrap;
-        gap: 16px;
-      }
-
-      .page-header h1 {
-        font-size: 28px;
-        font-weight: 800;
-        color: #fff;
-        letter-spacing: -0.5px;
-      }
-
-      .page-header-sub {
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.4);
-        margin-top: 4px;
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        margin-bottom: 32px;
-      }
-
-      .stat-card {
-        background: #161822;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 14px;
-        padding: 24px;
-        transition: border-color 0.3s;
-      }
-
-      .stat-card:hover {
-        border-color: rgba(255, 255, 255, 0.1);
-      }
-
-      .stat-label {
-        font-size: 13px;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.4);
-        margin-bottom: 8px;
-      }
-
-      .stat-value {
-        font-size: 32px;
-        font-weight: 800;
-        color: #fff;
-        letter-spacing: -1px;
-      }
-
-      .stat-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        margin-bottom: 12px;
-      }
-
-      .stat-icon.purple {
-        background: rgba(99, 102, 241, 0.12);
-      }
-      .stat-icon.green {
-        background: rgba(16, 185, 129, 0.12);
-      }
-      .stat-icon.amber {
-        background: rgba(245, 158, 11, 0.12);
-      }
-
-      .card {
-        background: #161822;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 16px;
-        margin-bottom: 24px;
-        overflow: hidden;
-      }
-
-      .card-head {
-        padding: 24px 28px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .card-head h2 {
-        font-size: 17px;
-        font-weight: 700;
-        color: #fff;
-        letter-spacing: -0.2px;
-      }
-
-      .table-wrap {
-        overflow-x: auto;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      thead th {
-        text-align: left;
-        padding: 14px 20px;
-        font-size: 12px;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.35);
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        white-space: nowrap;
-      }
-
-      tbody td {
-        padding: 16px 20px;
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.8);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        white-space: nowrap;
-      }
-
-      tbody tr:hover {
-        background: rgba(255, 255, 255, 0.02);
-      }
-
-      tbody tr:last-child td {
-        border-bottom: none;
-      }
-
-      .lead-name {
-        font-weight: 600;
-        color: #fff;
-      }
-
-      .lead-email {
-        color: #818cf8;
-      }
-
-      .lead-message {
-        max-width: 200px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        color: rgba(255, 255, 255, 0.5);
-      }
-
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 12px;
-        border-radius: 100px;
-        font-size: 12px;
-        font-weight: 600;
-      }
-
-      .badge-new {
-        background: rgba(59, 130, 246, 0.12);
-        color: #60a5fa;
-        border: 1px solid rgba(59, 130, 246, 0.2);
-      }
-
-      .badge-contacted {
-        background: rgba(16, 185, 129, 0.12);
-        color: #34d399;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-      }
-
-      .badge-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-      }
-
-      .badge-new .badge-dot {
-        background: #60a5fa;
-      }
-      .badge-contacted .badge-dot {
-        background: #34d399;
-      }
-
-      .empty-state {
-        text-align: center;
-        padding: 60px 24px;
-        color: rgba(255, 255, 255, 0.3);
-      }
-
-      .empty-icon {
-        font-size: 48px;
-        margin-bottom: 16px;
-        opacity: 0.3;
-      }
-
-      .empty-state h3 {
-        font-size: 16px;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.5);
-        margin-bottom: 6px;
-      }
-
-      .empty-state p {
-        font-size: 14px;
-      }
-
-      .loading {
-        text-align: center;
-        padding: 60px 24px;
-        color: rgba(255, 255, 255, 0.4);
-        font-size: 14px;
-      }
-
-      .upgrade-banner {
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-        border-radius: 16px;
-        padding: 28px 32px;
-        margin-bottom: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 24px;
-      }
-
-      .upgrade-banner h3 {
-        font-size: 18px;
-        font-weight: 700;
-        color: #fff;
-        margin-bottom: 4px;
-      }
-
-      .upgrade-banner p {
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.8);
-      }
-
-      .btn-upgrade {
-        background: #fff;
-        color: #b91c1c;
-        padding: 12px 28px;
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 700;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-family: "Inter", sans-serif;
-        white-space: nowrap;
-      }
-
-      .btn-upgrade:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-      }
-
-      .agent-live-section {
-        margin-bottom: 24px;
-      }
-
-      .agent-live-section .card {
-        background: #161822;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 16px;
-        overflow: hidden;
-      }
-
-      .live-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 12px;
-        border-radius: 100px;
-        font-size: 12px;
-        font-weight: 700;
-        background: rgba(16, 185, 129, 0.12);
-        color: #34d399;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        letter-spacing: 0.5px;
-      }
-
-      .live-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: #34d399;
-        box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
-        animation: pulse-live 2s infinite;
-      }
-
-      @keyframes pulse-live {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.4;
-        }
-      }
-
-      .agent-content {
-        padding: 24px 28px;
-      }
-
-      .agent-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 16px;
-        background: #0d0f16;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 10px;
-        margin-bottom: 12px;
-      }
-
-      .agent-field {
-        flex: 1;
-        min-width: 0;
-      }
-
-      .agent-label {
-        font-size: 11px;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.35);
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        margin-bottom: 4px;
-      }
-
-      .agent-value {
-        font-size: 13px;
-        color: #a5b4fc;
-        word-break: break-all;
-        line-height: 1.5;
-      }
-
-      .agent-value.mono {
-        font-family: "SF Mono", "Fira Code", "Consolas", monospace;
-        font-size: 12px;
-      }
-
-      .btn-copy {
-        background: rgba(99, 102, 241, 0.15);
-        color: #818cf8;
-        border: 1px solid rgba(99, 102, 241, 0.2);
-        padding: 8px 18px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-family: "Inter", sans-serif;
-        white-space: nowrap;
-      }
-
-      .btn-copy:hover {
-        background: rgba(99, 102, 241, 0.25);
-      }
-
-      .platform-guides {
-        margin-top: 20px;
-      }
-
-      .guide-grid {
-        display: grid;
-        gap: 8px;
-      }
-
-      .guide-item {
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.6);
-        padding: 10px 14px;
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.04);
-        line-height: 1.5;
-      }
-
-      .guide-item strong {
-        color: #fff;
-      }
-
-      .refund-section {
-        margin-bottom: 24px;
-      }
-
-      .refund-card {
-        background: #161822;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 14px;
-        padding: 24px 28px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-      }
-
-      .refund-info h3 {
-        font-size: 15px;
-        font-weight: 700;
-        color: #fff;
-        margin-bottom: 4px;
-      }
-
-      .refund-info p {
-        font-size: 13px;
-        color: rgba(255, 255, 255, 0.4);
-        line-height: 1.5;
-      }
-
-      .btn-refund {
-        padding: 10px 22px;
-        background: rgba(239, 68, 68, 0.1);
-        color: #f87171;
-        border: 1px solid rgba(239, 68, 68, 0.2);
-        border-radius: 10px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-family: "Inter", sans-serif;
-        white-space: nowrap;
-      }
-
-      .btn-refund:hover {
-        background: rgba(239, 68, 68, 0.2);
-      }
-
-      .btn-refund:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .refund-confirm-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(8px);
-        z-index: 200;
-        justify-content: center;
-        align-items: center;
-        padding: 24px;
-      }
-
-      .refund-confirm-overlay.show {
-        display: flex;
-      }
-
-      .refund-confirm-box {
-        background: #161822;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 20px;
-        max-width: 460px;
-        width: 100%;
-        padding: 36px;
-        text-align: center;
-      }
-
-      .refund-confirm-box h2 {
-        font-size: 20px;
-        font-weight: 800;
-        color: #fff;
-        margin-bottom: 12px;
-      }
-
-      .refund-confirm-box p {
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.5);
-        line-height: 1.6;
-        margin-bottom: 28px;
-      }
-
-      .refund-confirm-actions {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-      }
-
-      .btn-confirm-refund {
-        padding: 12px 28px;
-        background: #ef4444;
-        color: #fff;
-        border: none;
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        font-family: "Inter", sans-serif;
-        transition: all 0.2s;
-      }
-
-      .btn-confirm-refund:hover {
-        background: #dc2626;
-      }
-      .btn-confirm-refund:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .btn-cancel-refund {
-        padding: 12px 28px;
-        background: rgba(255, 255, 255, 0.06);
-        color: rgba(255, 255, 255, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        font-family: "Inter", sans-serif;
-        transition: all 0.2s;
-      }
-
-      .btn-cancel-refund:hover {
-        background: rgba(255, 255, 255, 0.1);
-      }
-
-      .spinner-sm {
-        width: 14px;
-        height: 14px;
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        border-top-color: #fff;
-        border-radius: 50%;
-        animation: spin 0.6s linear infinite;
-        display: inline-block;
-        vertical-align: middle;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      .toast {
-        position: fixed;
-        bottom: 32px;
-        left: 50%;
-        transform: translateX(-50%) translateY(100px);
-        padding: 14px 32px;
-        border-radius: 12px;
-        font-size: 14px;
-        font-weight: 600;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        z-index: 1000;
-        font-family: "Inter", sans-serif;
-      }
-
-      .toast.show {
-        transform: translateX(-50%) translateY(0);
-      }
-
-      .toast.success {
-        background: #22c55e;
-        color: #fff;
-      }
-      .toast.error {
-        background: #ef4444;
-        color: #fff;
-      }
-
-      @media (max-width: 768px) {
-        .main-container {
-          padding: 24px 16px 60px;
-        }
-        .topbar {
-          padding: 0 16px;
-        }
-        .page-header h1 {
-          font-size: 22px;
-        }
-        .upgrade-banner {
-          flex-direction: column;
-          text-align: center;
-        }
-        .topbar-right {
-          gap: 6px;
-        }
-        .topbar-nav-link {
-          padding: 6px 10px;
-          font-size: 12px;
-        }
-        .agent-row {
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .btn-copy {
-          align-self: flex-start;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="/styles.css" />
+    
   </head>
   <body>
+    {{impersonationBanner}}
     <nav class="topbar">
       <div class="topbar-brand">
         <div class="topbar-logo">AI</div>
@@ -763,17 +33,15 @@
 
         {{adminButton}}
 
-        <div class="topbar-status {{statusClass}}" id="statusBadge">
-          <span class="status-dot"></span>
-          <span id="statusText">{{statusText}}</span>
+        <div class="topbar-status-wrap">
+          <div class="topbar-status {{statusClass}}" id="statusBadge">
+            <span class="status-dot"></span>
+            <span id="statusText">{{statusText}}</span>
+          </div>
+          <p class="topbar-status-policy">Refunds are available within 3 days of billing.</p>
         </div>
 
-        <a
-          href="/logout"
-          class="topbar-nav-link"
-          style="color: rgba(255, 255, 255, 0.4)"
-          >Logout</a
-        >
+        <a href="/logout" class="topbar-nav-link muted">Logout</a>
       </div>
     </nav>
 
@@ -840,16 +108,9 @@
           }
 
           const leads = data.leads || [];
-          document.getElementById("totalLeads").textContent = leads.length;
-
-          var contacted = 0;
-          var newCount = 0;
-          leads.forEach(function (l) {
-            if (l.status === "contacted") contacted++;
-            else newCount++;
-          });
-          document.getElementById("contactedLeads").textContent = contacted;
-          document.getElementById("newLeads").textContent = newCount;
+          document.getElementById("totalLeads").textContent = data.totalLeads || leads.length;
+          document.getElementById("contactedLeads").textContent = data.contacted || 0;
+          document.getElementById("newLeads").textContent = data.newLeads || 0;
 
           if (leads.length === 0) {
             document.getElementById("leadsContent").innerHTML =
@@ -859,7 +120,7 @@
 
           var html = '<div class="table-wrap"><table><thead><tr>';
           html +=
-            "<th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>Status</th><th>Date</th>";
+            "<th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>Status</th><th>Date</th><th>Actions</th>";
           html += "</tr></thead><tbody>";
 
           leads.forEach(function (lead) {
@@ -874,7 +135,7 @@
                 })
               : "-";
 
-            html += "<tr>";
+            html += "<tr id=\"lead-row-" + lead.id + "\">";
             html +=
               '<td class="lead-name">' + escapeHtml(lead.name || "-") + "</td>";
             html +=
@@ -891,10 +152,18 @@
             html +=
               '<td><span class="badge ' +
               statusClass +
-              '"><span class="badge-dot"></span>' +
+              '" id="lead-badge-' + lead.id + '"><span class="badge-dot"></span>' +
               statusLabel +
               "</span></td>";
             html += "<td>" + date + "</td>";
+            html += "<td class=\"lead-actions\">";
+            if (lead.status !== "contacted") {
+              html += '<button class="btn-sm btn-outline" onclick="markContacted(' + lead.id + ')">Mark Contacted</button>';
+            }
+            if (lead.conversation_id) {
+              html += ' <a class="btn-sm btn-outline" href="/dashboard/conversations/' + lead.conversation_id + '">View Conversation</a>';
+            }
+            html += "</td>";
             html += "</tr>";
           });
 
@@ -916,6 +185,36 @@
       }
 
       loadLeads();
+
+      async function markContacted(leadId) {
+        try {
+          var r = await fetch("/dashboard/leads/" + leadId + "/contacted", { method: "POST" });
+          var d = await r.json();
+          if (d.success) {
+            var badge = document.getElementById("lead-badge-" + leadId);
+            if (badge) {
+              badge.className = "badge badge-contacted";
+              badge.innerHTML = '<span class="badge-dot"></span>Contacted';
+            }
+            var row = document.getElementById("lead-row-" + leadId);
+            if (row) {
+              var btns = row.querySelectorAll(".lead-actions .btn-sm");
+              for (var i = 0; i < btns.length; i++) {
+                if (btns[i].textContent === "Mark Contacted") btns[i].remove();
+              }
+            }
+            showToast("Lead marked as contacted");
+            var contactedEl = document.getElementById("contactedLeads");
+            var newEl = document.getElementById("newLeads");
+            contactedEl.textContent = Number(contactedEl.textContent) + 1;
+            newEl.textContent = Math.max(0, Number(newEl.textContent) - 1);
+          } else {
+            showToast(d.error || "Failed to update", "error");
+          }
+        } catch (e) {
+          showToast("Connection error", "error");
+        }
+      }
 
       function copyText(id, message) {
         var el = document.getElementById(id);
@@ -1029,5 +328,8 @@
         btn.textContent = "Confirm Refund";
       }
     </script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>document.addEventListener('DOMContentLoaded', function(){ if (window.lucide) lucide.createIcons(); });</script>
+  <script src="/site-agent.js"></script>
   </body>
 </html>

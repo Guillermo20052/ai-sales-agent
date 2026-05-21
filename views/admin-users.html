@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Users - Admin Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+    <meta name="csrf-token" content="{{CSRF_TOKEN}}" />
+  </head>
+  <body>
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-header"><h1>Admin Portal</h1></div>
+        <nav class="admin-sidebar-nav">
+          <a href="/internal-admin-portal-93847"><span class="nav-icon">&#9673;</span> <span>Overview</span></a>
+          <a href="/internal-admin-portal-93847/users" class="active"><span class="nav-icon">&#9823;</span> <span>Users</span></a>
+          <a href="/internal-admin-portal-93847/revenue"><span class="nav-icon">&#36;</span> <span>Revenue</span></a>
+          <a href="/internal-admin-portal-93847/refunds"><span class="nav-icon">&#8634;</span> <span>Refunds</span></a>
+          <a href="/internal-admin-portal-93847/admin-logs"><span class="nav-icon">&#9776;</span> <span>Logs</span></a>
+        </nav>
+        <div class="admin-sidebar-footer"><a href="/logout"><span class="nav-icon">&#10132;</span> <span>Logout</span></a></div>
+      </aside>
+
+      <main class="admin-main">
+      <div class="admin-page-title">User Management</div>
+      <input type="text" id="userSearch" class="admin-search-input" placeholder="Search by name, email, or business..." />
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Name</th>
+              <th>Business</th>
+              <th>Plan</th>
+              <th>Status</th>
+              <th>Revenue</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr class="empty-row"><td colspan="8">Loading subscribers...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="admin-pagination" id="pagination"></div>
+      </main>
+    </div>
+
+    <div class="admin-modal-overlay" id="confirmModal">
+      <div class="admin-modal-box">
+        <h2 id="modalTitle">Confirm Action</h2>
+        <p id="modalMessage"></p>
+        <div class="admin-modal-actions">
+          <button class="modal-cancel-btn" onclick="closeModal()">Cancel</button>
+          <button id="modalConfirmBtn" class="modal-danger-btn">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-toast" id="toast"></div>
+
+    <script>
+    (function () {
+      var BASE = "/internal-admin-portal-93847";
+      var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+      var searchInput = document.getElementById("userSearch");
+      var tableBody = document.getElementById("usersTableBody");
+      var paginationEl = document.getElementById("pagination");
+      var modalOverlay = document.getElementById("confirmModal");
+      var modalTitle = document.getElementById("modalTitle");
+      var modalMessage = document.getElementById("modalMessage");
+      var modalConfirmBtn = document.getElementById("modalConfirmBtn");
+      var toastEl = document.getElementById("toast");
+      var currentPage = 1;
+      var searchTimeout = null;
+      var pendingAction = null;
+
+      function escapeHtml(text) {
+        return String(text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+
+      function showToast(message, type) {
+        toastEl.textContent = message;
+        toastEl.className = "admin-toast " + type + " show";
+        setTimeout(function () { toastEl.className = "admin-toast"; }, 3500);
+      }
+
+      function closeModal() {
+        modalOverlay.classList.remove("show");
+        pendingAction = null;
+      }
+      window.closeModal = closeModal;
+
+      function openModal(title, message, btnText, btnClass, onConfirm) {
+        modalTitle.textContent = title;
+        modalMessage.innerHTML = message;
+        modalConfirmBtn.textContent = btnText;
+        modalConfirmBtn.className = btnClass;
+        pendingAction = onConfirm;
+        modalOverlay.classList.add("show");
+      }
+
+      modalConfirmBtn.addEventListener("click", function () { if (pendingAction) pendingAction(); });
+      modalOverlay.addEventListener("click", function (e) { if (e.target === modalOverlay) closeModal(); });
+
+      async function loadUsers(page, query) {
+        var params = new URLSearchParams();
+        if (query) params.set("q", query);
+        params.set("page", page);
+        try {
+          var res = await fetch(BASE + "/api/users?" + params.toString());
+          var data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Failed to load users.");
+          renderUsers(data.users, data.page, data.pages, data.total);
+        } catch (err) {
+          tableBody.innerHTML = '<tr class="empty-row"><td colspan="8">Error loading subscribers.</td></tr>';
+          paginationEl.innerHTML = "";
+        }
+      }
+
+      function renderUsers(users, page, pages, total) {
+        if (!users.length) {
+          tableBody.innerHTML = '<tr class="empty-row"><td colspan="8">No subscribers found.</td></tr>';
+          paginationEl.innerHTML = "";
+          return;
+        }
+        tableBody.innerHTML = users.map(function (u) {
+          var plan = u.subscription_amount
+            ? "$" + (u.subscription_amount / 100).toLocaleString("en-US") + "/" + (u.billing_cycle === "year" ? "yr" : "mo")
+            : "\u2014";
+          var rev = u.lifetime_revenue
+            ? "$" + (u.lifetime_revenue / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            : "$0.00";
+          var created = new Date(u.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+          var status = escapeHtml(u.subscription_status || "inactive");
+          var canRefund = status === "active";
+          var emailSafe = escapeHtml(u.email).replace(/'/g, "\\'");
+          return '<tr>' +
+            '<td>' + escapeHtml(u.email) + '</td>' +
+            '<td>' + escapeHtml(u.name || "\u2014") + '</td>' +
+            '<td>' + escapeHtml(u.business_name || "\u2014") + '</td>' +
+            '<td>' + plan + '</td>' +
+            '<td><span class="status-pill status-' + status + '">' + status + '</span></td>' +
+            '<td>' + rev + '</td>' +
+            '<td>' + created + '</td>' +
+            '<td><div class="admin-actions-cell">' +
+              '<a class="admin-btn btn-manage" href="' + BASE + '/users/' + u.id + '">Manage</a>' +
+              '<form method="POST" action="' + BASE + '/users/' + u.id + '/impersonate" style="margin:0;display:inline">' +
+                '<input type="hidden" name="_csrf" value="' + csrfToken + '">' +
+                '<button type="submit" class="admin-btn btn-impersonate">Impersonate</button>' +
+              '</form>' +
+              '<button class="admin-btn btn-refund" ' + (canRefund ? '' : 'disabled') +
+                ' onclick="window._adminRefund(' + u.id + ',\'' + emailSafe + '\')">Refund</button>' +
+              '<button class="admin-btn btn-delete"' +
+                ' onclick="window._adminDelete(' + u.id + ',\'' + emailSafe + '\')">Delete</button>' +
+            '</div></td></tr>';
+        }).join("");
+
+        var prev = page > 1;
+        var next = page < pages;
+        paginationEl.innerHTML =
+          '<button ' + (prev ? '' : 'disabled') + ' onclick="window._adminPage(' + (page - 1) + ')">Previous</button>' +
+          '<span>Page ' + page + ' of ' + pages + ' (' + total + ' users)</span>' +
+          '<button ' + (next ? '' : 'disabled') + ' onclick="window._adminPage(' + (page + 1) + ')">Next</button>';
+      }
+
+      window._adminPage = function (p) { currentPage = p; loadUsers(p, searchInput.value.trim()); };
+
+      window._adminDelete = function (id, email) {
+        openModal("Delete Account",
+          'Are you sure you want to permanently delete the account <span class="highlight">' + escapeHtml(email) + '</span>? This will cancel their subscription and remove all their data. This action cannot be undone.',
+          "Delete Account", "modal-danger-btn",
+          async function () {
+            closeModal();
+            try {
+              var res = await fetch(BASE + "/users/" + id, { method: "DELETE", headers: { "x-csrf-token": csrfToken } });
+              var data = await res.json();
+              if (!res.ok) throw new Error(data.error || "Delete failed.");
+              showToast(data.message || "Account deleted.", "success");
+              loadUsers(currentPage, searchInput.value.trim());
+            } catch (err) { showToast(err.message || "Failed to delete account.", "error"); }
+          });
+      };
+
+      window._adminRefund = function (id, email) {
+        openModal("Grant Refund",
+          'Issue a full refund for <span class="highlight">' + escapeHtml(email) + '</span>? This will refund their latest payment and cancel their subscription.',
+          "Process Refund", "modal-warn-btn",
+          async function () {
+            closeModal();
+            try {
+              var res = await fetch(BASE + "/users/" + id + "/refund", { method: "POST", headers: { "x-csrf-token": csrfToken } });
+              var data = await res.json();
+              if (!res.ok) throw new Error(data.error || "Refund failed.");
+              showToast(data.message || "Refund processed.", "success");
+              loadUsers(currentPage, searchInput.value.trim());
+            } catch (err) { showToast(err.message || "Failed to process refund.", "error"); }
+          });
+      };
+
+      searchInput.addEventListener("input", function () {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function () { currentPage = 1; loadUsers(1, searchInput.value.trim()); }, 300);
+      });
+
+      loadUsers(1, "");
+    })();
+    </script>
+  </body>
+</html>

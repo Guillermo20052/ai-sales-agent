@@ -54,7 +54,7 @@ async function usageLimit(req, res, next) {
     next();
   } catch (err) {
     console.error("USAGE LIMIT ERROR:", err);
-    res.status(500).json({ error: "Internal server error." });
+    return res.status(500).json({ error: "Internal server error." });
   }
 }
 

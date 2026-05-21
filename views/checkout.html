@@ -7,92 +7,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <style>
-      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-      body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        background: #0f1117;
-        min-height: 100vh;
-        display: flex; align-items: center; justify-content: center;
-        padding: 24px;
-      }
-      .checkout-wrapper { width: 100%; max-width: 480px; }
-      .checkout-brand { text-align: center; margin-bottom: 36px; }
-      .checkout-logo {
-        width: 52px; height: 52px;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        border-radius: 14px;
-        display: inline-flex; align-items: center; justify-content: center;
-        font-size: 22px; font-weight: 800; color: white;
-        margin-bottom: 20px;
-        box-shadow: 0 8px 30px rgba(99, 102, 241, 0.3);
-      }
-      .checkout-brand h1 { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 6px; }
-      .checkout-brand p { font-size: 14px; color: rgba(255, 255, 255, 0.4); }
-      .checkout-card {
-        background: #161822;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 20px;
-        padding: 40px;
-        position: relative;
-        overflow: hidden;
-      }
-      .checkout-card::before {
-        content: '';
-        position: absolute; top: 0; left: 0; right: 0; height: 3px;
-        background: linear-gradient(90deg, #6366f1, #8b5cf6, #c084fc);
-      }
-      .plan-header { text-align: center; margin-bottom: 28px; }
-      .plan-badge {
-        display: inline-flex;
-        background: rgba(99, 102, 241, 0.12);
-        color: #a5b4fc; padding: 5px 14px; border-radius: 100px;
-        font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-        margin-bottom: 16px;
-      }
-      .plan-price { font-size: 48px; font-weight: 900; color: #fff; letter-spacing: -2px; }
-      .plan-price span { font-size: 18px; font-weight: 500; color: rgba(255, 255, 255, 0.4); letter-spacing: 0; }
-      .plan-features { list-style: none; margin-bottom: 32px; }
-      .plan-features li {
-        display: flex; align-items: center; gap: 12px;
-        padding: 10px 0; font-size: 14px; color: rgba(255, 255, 255, 0.7);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      }
-      .plan-features li:last-child { border-bottom: none; }
-      .check {
-        width: 20px; height: 20px; border-radius: 50%;
-        background: rgba(16, 185, 129, 0.12); color: #34d399;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 12px; flex-shrink: 0;
-      }
-      .btn-activate {
-        width: 100%; padding: 14px 32px;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        color: #fff; font-size: 15px; font-weight: 700;
-        border: none; border-radius: 12px; cursor: pointer;
-        font-family: 'Inter', sans-serif; transition: all 0.25s;
-      }
-      .btn-activate:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4); }
-      .btn-activate:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-      .secure-note {
-        text-align: center; margin-top: 16px;
-        font-size: 12px; color: rgba(255, 255, 255, 0.3);
-        display: flex; align-items: center; justify-content: center; gap: 6px;
-      }
-      .error-msg {
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-        color: #f87171; padding: 12px 16px; border-radius: 10px;
-        font-size: 13px; font-weight: 500; margin-bottom: 20px; display: none;
-      }
-    </style>
+    <link rel="stylesheet" href="/styles.css" />
+    
   </head>
   <body>
     <div class="checkout-wrapper">
       <div class="checkout-brand">
         <div class="checkout-logo">AI</div>
         <h1>Activate Your Subscription</h1>
-        <p>One step away from unlimited AI sales power</p>
+        <p>3-Day Free Trial. Cancel anytime. Refund available within 3 days of the initial billing.</p>
       </div>
 
       <div class="checkout-card">
@@ -113,6 +36,8 @@
         </ul>
 
         <button class="btn-activate" id="activateBtn" onclick="startCheckout()">Activate Subscription</button>
+
+        <p class="checkout-policy">Subscriptions are fully refundable within 3 days after your first charge. After that period, payments are non-refundable. You may cancel anytime to prevent future billing.</p>
 
         <div class="secure-note">
           &#128274; Secure payment powered by Stripe
@@ -152,5 +77,6 @@
         }
       }
     </script>
+  <script src="/site-agent.js"></script>
   </body>
 </html>

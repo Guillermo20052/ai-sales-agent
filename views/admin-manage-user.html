@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage User - Admin Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+    <meta name="csrf-token" content="{{CSRF_TOKEN}}" />
+    <style>
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: var(--space-3);
+        transition: color var(--transition);
+      }
+      .back-link:hover { color: var(--text); }
+      .user-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin-bottom: var(--space-4);
+      }
+      .user-header h2 { font-size: 20px; font-weight: 700; }
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: var(--space-2);
+        margin-bottom: var(--space-4);
+      }
+      .info-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: var(--space-2);
+      }
+      .info-item .info-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted-2);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+      }
+      .info-item .info-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+        word-break: break-all;
+      }
+      .admin-section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-3);
+        margin-bottom: var(--space-4);
+      }
+      .admin-section h3 {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: var(--space-2);
+        padding-bottom: var(--space);
+        border-bottom: 1px solid var(--border);
+      }
+      .form-row {
+        margin-bottom: var(--space-2);
+      }
+      .form-row label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+      }
+      .form-row input,
+      .form-row textarea {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--bg-subtle);
+        color: var(--text);
+        font-size: 13px;
+        font-family: var(--font);
+        transition: border-color var(--transition);
+      }
+      .form-row input:focus,
+      .form-row textarea:focus {
+        outline: none;
+        border-color: var(--border-strong);
+      }
+      .form-row textarea {
+        min-height: 80px;
+        resize: vertical;
+      }
+      .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--space-2);
+        margin-top: var(--space-3);
+      }
+      .btn-save {
+        padding: 8px 20px;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: var(--font);
+        background: var(--accent);
+        color: var(--bg);
+        transition: all var(--transition);
+      }
+      .btn-save:hover { background: var(--accent-hover); }
+      .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+      .msg-cell { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    </style>
+  </head>
+  <body>
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-header"><h1>Admin Portal</h1></div>
+        <nav class="admin-sidebar-nav">
+          <a href="/internal-admin-portal-93847"><span class="nav-icon">&#9673;</span> <span>Overview</span></a>
+          <a href="/internal-admin-portal-93847/users" class="active"><span class="nav-icon">&#9823;</span> <span>Users</span></a>
+          <a href="/internal-admin-portal-93847/revenue"><span class="nav-icon">&#36;</span> <span>Revenue</span></a>
+          <a href="/internal-admin-portal-93847/refunds"><span class="nav-icon">&#8634;</span> <span>Refunds</span></a>
+          <a href="/internal-admin-portal-93847/admin-logs"><span class="nav-icon">&#9776;</span> <span>Logs</span></a>
+        </nav>
+        <div class="admin-sidebar-footer"><a href="/logout"><span class="nav-icon">&#10132;</span> <span>Logout</span></a></div>
+      </aside>
+
+      <main class="admin-main">
+      <a href="/internal-admin-portal-93847/users" class="back-link">&larr; Back to Users</a>
+
+      <div class="user-header">
+        <h2>{{USER_EMAIL}}</h2>
+        <span class="badge badge-{{USER_STATUS}}">{{USER_STATUS}}</span>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Email</div>
+          <div class="info-value">{{USER_EMAIL}}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Name</div>
+          <div class="info-value">{{USER_NAME}}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Plan</div>
+          <div class="info-value">{{USER_PLAN}}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Status</div>
+          <div class="info-value">{{USER_STATUS}}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Lifetime Revenue</div>
+          <div class="info-value">{{USER_REVENUE}}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Created</div>
+          <div class="info-value">{{USER_CREATED}}</div>
+        </div>
+      </div>
+
+      <!-- BUSINESS PROFILE -->
+      <div class="admin-section">
+        <h3>Business Profile</h3>
+        <form id="profileForm">
+          <div class="form-row">
+            <label>Business Name</label>
+            <input type="text" name="business_name" value="{{BP_BUSINESS_NAME}}" />
+          </div>
+          <div class="form-row">
+            <label>Website URL</label>
+            <input type="text" name="website_url" value="{{BP_WEBSITE_URL}}" />
+          </div>
+          <div class="form-row">
+            <label>AI Agent Name</label>
+            <input type="text" name="ai_agent_name" value="{{BP_AGENT_NAME}}" />
+          </div>
+          <div class="form-row">
+            <label>Description</label>
+            <textarea name="description">{{BK_DESCRIPTION}}</textarea>
+          </div>
+          <div class="form-row">
+            <label>Services</label>
+            <textarea name="services">{{BK_SERVICES}}</textarea>
+          </div>
+          <div class="form-row">
+            <label>Pricing</label>
+            <textarea name="pricing">{{BK_PRICING}}</textarea>
+          </div>
+          <div class="form-row">
+            <label>FAQs</label>
+            <textarea name="faqs">{{BK_FAQS}}</textarea>
+          </div>
+          <div class="form-row">
+            <label>Tone</label>
+            <input type="text" name="tone" value="{{BK_TONE}}" />
+          </div>
+          <div class="form-row">
+            <label>Restrictions</label>
+            <textarea name="restrictions">{{BK_RESTRICTIONS}}</textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-save" id="saveBtn">Save Changes</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- LEADS -->
+      <div class="admin-section">
+        <h3>Leads</h3>
+        <div class="admin-table-container" style="margin-bottom: 0;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Message</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>{{LEADS_ROWS}}</tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CONVERSATIONS -->
+      <div class="admin-section">
+        <h3>Recent Conversations</h3>
+        <div class="admin-table-container" style="margin-bottom: 0;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Visitor</th>
+                <th>Role</th>
+                <th>Message</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>{{CONVERSATIONS_ROWS}}</tbody>
+          </table>
+        </div>
+      </div>
+      </main>
+    </div>
+
+    <div class="admin-toast" id="toast"></div>
+
+    <script>
+    (function () {
+      var BASE = "/internal-admin-portal-93847";
+      var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+      var USER_ID = {{USER_ID}};
+      var form = document.getElementById("profileForm");
+      var saveBtn = document.getElementById("saveBtn");
+      var toastEl = document.getElementById("toast");
+
+      function showToast(message, type) {
+        toastEl.textContent = message;
+        toastEl.className = "admin-toast " + type + " show";
+        setTimeout(function () { toastEl.className = "admin-toast"; }, 3500);
+      }
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+
+        var data = {};
+        new FormData(form).forEach(function (val, key) { data[key] = val; });
+
+        try {
+          var res = await fetch(BASE + "/api/users/" + USER_ID + "/profile", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
+            body: JSON.stringify(data),
+          });
+          var result = await res.json();
+          if (!res.ok) throw new Error(result.error || "Save failed.");
+          showToast(result.message || "Profile saved.", "success");
+        } catch (err) {
+          showToast(err.message || "Failed to save profile.", "error");
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.textContent = "Save Changes";
+        }
+      });
+    })();
+    </script>
+  </body>
+</html>

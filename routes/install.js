@@ -1,28 +1,15 @@
 const express = require("express");
 const authMiddleware = require("../middleware/authMiddleware");
-const pool = require("../services/db");
+const requireBusinessOwner = require("../middleware/requireBusinessOwner");
 
 const router = express.Router();
 
-router.get("/", authMiddleware, async (req, res) => {
+router.get("/", authMiddleware, requireBusinessOwner, async (req, res) => {
   try {
-    const userId = req.session.userId;
-
-    const result = await pool.query(
-      "SELECT id, business_name FROM business_profiles WHERE user_id = $1",
-      [userId],
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(400).json({ error: "No business profile found." });
-    }
-
-    const business = result.rows[0];
-
+    const business = req.business;
     const baseUrl = process.env.BASE_URL;
 
     const embedCode = `<script src="${baseUrl}/widget.js" data-business="${business.id}"></script>`;
-
     const hostedPage = `${baseUrl}/b/${business.id}`;
 
     res.json({
@@ -33,7 +20,7 @@ router.get("/", authMiddleware, async (req, res) => {
     });
   } catch (err) {
     console.error("INSTALL ROUTE ERROR:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Unable to load install page." });
   }
 });
 

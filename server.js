@@ -1,57 +1,264 @@
 require("dotenv").config();
 
+// ── Node version enforcement (engines: node >=18) ─────────────────────────
+const nodeMajor = parseInt(process.version.slice(1).split(".")[0], 10);
+if (nodeMajor < 18) {
+  console.error("FATAL: Node.js 18 or later is required. Current:", process.version);
+  process.exit(1);
+}
+
+// ── Process-level crash protection ───────────────────────────────────────
+function safeStringify(value) {
+  try {
+    return JSON.stringify(value);
+  } catch (_) {
+    return '{"error":"Invalid response"}';
+  }
+}
+
+process.on("uncaughtException", (err) => {
+  const msg = err && err.message ? err.message : String(err);
+  console.error("UNCAUGHT_EXCEPTION:", msg);
+  if (err && err.stack) console.error(err.stack);
+  setTimeout(() => process.exit(1), 500);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("UNHANDLED_REJECTION:", reason);
+});
+
+const {
+  globalLimiter,
+  authLimiter,
+  agentLimiter,
+  sanitizeBody,
+  safeErrorHandler,
+  validateEnvVars,
+  passwordLimiter,
+  requestTimeoutMiddleware,
+  botFilter,
+  ipBlockMiddleware,
+  perUserLimiter,
+  aiPerUserLimiter,
+} = require("./middleware/security");
+
+validateEnvVars();
+
+if (process.env.NODE_ENV === "development") {
+  console.log("Database connection configured.");
+}
+
 const express = require("express");
 const session = require("express-session");
+const pgSession = require("connect-pg-simple")(session);
 const cors = require("cors");
+const helmet = require("helmet");
 
 const app = express();
+app.disable("x-powered-by");
 const PORT = process.env.PORT || 5000;
+if (!process.env.AGENT_STRICT_GROUNDED) process.env.AGENT_STRICT_GROUNDED = "true";
+if (!process.env.AGENT_STRICT_MIN_EVIDENCE) process.env.AGENT_STRICT_MIN_EVIDENCE = "1";
+if (!process.env.AGENT_STRICT_MIN_SCORE) process.env.AGENT_STRICT_MIN_SCORE = "0.35";
+if (!process.env.AGENT_MAX_REPLY_SOURCES) process.env.AGENT_MAX_REPLY_SOURCES = "2";
+if (!process.env.AGENT_ENABLE_LIVE_NAV) process.env.AGENT_ENABLE_LIVE_NAV = "true";
+if (!process.env.AGENT_LIVE_NAV_MAX_STEPS) process.env.AGENT_LIVE_NAV_MAX_STEPS = "2";
+if (!process.env.AGENT_LIVE_NAV_TIMEOUT_MS) process.env.AGENT_LIVE_NAV_TIMEOUT_MS = "8000";
+if (!process.env.AGENT_LIVE_NAV_TOTAL_BUDGET_MS) process.env.AGENT_LIVE_NAV_TOTAL_BUDGET_MS = "12000";
+if (!process.env.AGENT_MEMORY_DEFAULT_ENABLED) process.env.AGENT_MEMORY_DEFAULT_ENABLED = "true";
+if (!process.env.AGENT_MEMORY_DEFAULT_RETENTION_DAYS) process.env.AGENT_MEMORY_DEFAULT_RETENTION_DAYS = "30";
+if (!process.env.AGENT_RETRIEVAL_CACHE_TTL_MS) process.env.AGENT_RETRIEVAL_CACHE_TTL_MS = "45000";
+if (!process.env.AGENT_NAV_CACHE_TTL_MS) process.env.AGENT_NAV_CACHE_TTL_MS = "30000";
+if (!process.env.AGENT_RATE_LIMIT_PER_MIN) process.env.AGENT_RATE_LIMIT_PER_MIN = "40";
+if (!process.env.AGENT_CATALOG_NARROW_THRESHOLD) process.env.AGENT_CATALOG_NARROW_THRESHOLD = "12";
+if (!process.env.AGENT_QUEUE_CONCURRENCY) process.env.AGENT_QUEUE_CONCURRENCY = "1";
+if (!process.env.AGENT_QUEUE_MAX_JOBS) process.env.AGENT_QUEUE_MAX_JOBS = "500";
+if (!process.env.SLA_FALLBACK_WARN_PCT) process.env.SLA_FALLBACK_WARN_PCT = "45";
+if (!process.env.SLA_ERROR_WARN_PCT) process.env.SLA_ERROR_WARN_PCT = "8";
+if (!process.env.SLA_P95_WARN_MS) process.env.SLA_P95_WARN_MS = "8000";
+if (!process.env.SLA_QUEUE_WARN) process.env.SLA_QUEUE_WARN = "25";
+
+const useHttps = process.env.NODE_ENV === "production" || String(process.env.USE_HTTPS || "").toLowerCase() === "true";
+
+// Security headers (apply to all routes and static)
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://js.stripe.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "https://api.stripe.com"],
+        frameSrc: ["https://js.stripe.com"],
+        frameAncestors: ["'none'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    frameguard: { action: "deny" },
+    xContentTypeOptions: true,
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    hsts: useHttps ? { maxAge: 31536000, includeSubDomains: true } : false,
+  })
+);
+
+// Body parsing with size limits
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+
+// Request timeout (15s)
+app.use(requestTimeoutMiddleware(15 * 1000));
+
+// Block abusive IPs (Redis-backed when REDIS_URL set)
+app.use(ipBlockMiddleware);
+
+// Bot detection (skip webhook/health in middleware)
+app.use(botFilter);
+
+// Global rate limiting (100/min per IP)
+app.use(globalLimiter);
+
+// Sanitize request bodies
+app.use(sanitizeBody);
+
+// Safe JSON: prevent circular refs and huge objects from crashing response
+app.use((req, res, next) => {
+  const origJson = res.json.bind(res);
+  res.json = function (body) {
+    try {
+      const str = safeStringify(body);
+      if (str === '{"error":"Invalid response"}') {
+        res.status(500).set("Content-Type", "application/json").send(str);
+        return res;
+      }
+      res.setHeader("Content-Type", "application/json");
+      res.send(str);
+      return res;
+    } catch (_) {
+      res.status(500).set("Content-Type", "application/json").send('{"error":"Server error"}');
+      return res;
+    }
+  };
+  next();
+});
 
 const passwordRoutes = require("./routes/password");
-app.use("/password", passwordRoutes);
+app.use("/password", passwordLimiter, passwordRoutes);
 
-/* ========= HEALTH CHECK (instant 200, no DB) ========= */
-app.get("/health", (req, res) => {
-  res.status(200).send("OK");
+/* ========= HEALTH CHECK (DB, Redis, AI config) ========= */
+app.get("/health", async (req, res) => {
+  const status = { status: "ok", database: "unknown", redis: "unknown", ai: "unknown" };
+  let httpStatus = 200;
+  try {
+    await pool.query("SELECT 1");
+    status.database = "connected";
+  } catch (err) {
+    status.database = "error";
+    console.error("HEALTH_DB_ERROR:", err.message);
+    httpStatus = 503;
+  }
+  try {
+    const redis = require("./services/redis");
+    if (redis.REDIS_URL) {
+      status.redis = (await redis.ping()) ? "connected" : "error";
+      if (status.redis === "error") httpStatus = 503;
+    } else {
+      status.redis = "disabled";
+    }
+  } catch (err) {
+    status.redis = "error";
+    console.error("HEALTH_REDIS_ERROR:", err.message);
+    httpStatus = 503;
+  }
+  status.ai = process.env.ANTHROPIC_API_KEY && String(process.env.ANTHROPIC_API_KEY).trim() ? "configured" : "missing";
+  status.embeddings = process.env.VOYAGE_API_KEY && String(process.env.VOYAGE_API_KEY).trim() ? "configured" : "missing";
+  if (status.ai === "missing") status.ai = "not_configured";
+  if (status.embeddings === "missing") status.embeddings = "not_configured";
+  res.status(httpStatus).json(status);
+});
+
+/* ========= PUBLIC SLA HEALTH (no internal metrics) ========= */
+app.get("/health/sla", async (req, res) => {
+  try {
+    const health = require("./services/slaService").evaluateHealth();
+    const payload = { status: health.status, alerts: health.alerts, timestamp: health.timestamp };
+    const httpStatus = health.status === "healthy" ? 200 : 503;
+    res.status(httpStatus).json(payload);
+  } catch (err) {
+    console.error("HEALTH_SLA_ERROR:", err.message);
+    res.status(503).json({ status: "error", alerts: [], timestamp: new Date().toISOString() });
+  }
 });
 
 /* ========= LANDING PAGE (also serves as health check — returns 200) ========= */
-const fs = require("fs");
-const landingHtml = fs.readFileSync("./views/landing.html", "utf8");
 app.get("/", (req, res) => {
-  res.status(200).send(landingHtml);
+  res.sendFile(__dirname + "/views/landing.html");
 });
 
 /* ========= STRIPE WEBHOOK (MUST BE FIRST & RAW) ========= */
+const { webhookLimiter } = require("./middleware/security");
 app.use(
   "/webhook",
   express.raw({ type: "application/json" }),
+  webhookLimiter,
   require("./routes/webhook"),
 );
 
 /* ========= MIDDLEWARE ========= */
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.set("trust proxy", 1);
 
+const agentCors = cors({ origin: "*" });
+const baseOrigin = process.env.BASE_URL ? process.env.BASE_URL.replace(/\/+$/, "") : null;
+const restrictedCors = cors({
+  origin: baseOrigin ? baseOrigin : false,
+  credentials: true,
+});
+app.use("/agent", agentCors);
+app.use(restrictedCors);
+
+/* ========= STATIC FILES (safe: resolved path, block directory traversal) ========= */
+const path = require("path");
+const publicDir = path.join(__dirname, "public");
+app.use((req, res, next) => {
+  const p = (req.path || "").replace(/\/+/g, "/");
+  if (p.includes("..") || /\.env$/i.test(p)) return res.status(404).send("Not Found");
+  next();
+});
+app.use(express.static(publicDir));
+
+const sessionPool = require("./services/db");
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "devsecret",
+    store: new pgSession({
+      pool: sessionPool,
+      tableName: "user_sessions",
+      createTableIfMissing: true,
+      pruneSessionInterval: 60 * 15,
+    }),
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }, // Set true only if forcing HTTPS
+    cookie: {
+      httpOnly: true,
+      secure: useHttps,
+      sameSite: "strict",
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    },
+    name: "sid",
   }),
 );
 
-/* ========= STATIC FILES ========= */
-app.use(express.static("public"));
+// Per-user rate limit (200/min when authenticated)
+app.use(perUserLimiter);
 
 /* ========= ROUTES ========= */
-app.use("/auth", require("./routes/auth"));
-app.use("/chat", require("./routes/chat"));
+app.use("/auth", authLimiter, require("./routes/auth"));
+app.use("/chat", aiPerUserLimiter, agentLimiter, requestTimeoutMiddleware(30 * 1000), require("./routes/chat"));
 app.use("/dashboard", require("./routes/dashboard"));
-app.use("/agent", require("./routes/agent"));
+app.use("/agent", aiPerUserLimiter, agentLimiter, requestTimeoutMiddleware(30 * 1000), require("./routes/agent"));
 app.use("/b", require("./routes/publicBusiness"));
+app.use("/indexing", require("./routes/indexing"));
 app.use("/internal-admin-portal-93847", require("./routes/admin"));
 
 /* ========= SIGNUP PAGE ========= */
@@ -86,7 +293,12 @@ app.get("/verify", async (req, res) => {
     );
 
     req.session.userId = userId;
+    req.session._ip = req.ip;
+    req.session._ua = req.headers["user-agent"];
+    req.session._lastActivity = Date.now();
+    req.session._createdAt = Date.now();
 
+    logAuthEvent("email_verification", { userId, ip: req.ip, timestamp: new Date().toISOString() });
     res.redirect("/checkout");
   } catch (err) {
     console.error("VERIFY ERROR:", err);
@@ -215,9 +427,41 @@ app.get("/install-success", async (req, res) => {
   }
 });
 
+/* ========= STOP IMPERSONATION ========= */
+app.post("/admin/stop-impersonation", async (req, res) => {
+  if (!req.session.adminImpersonatorId) {
+    return res.redirect("/dashboard");
+  }
+  try {
+    const adminCheck = await pool.query(
+      "SELECT role FROM users WHERE id = $1",
+      [req.session.adminImpersonatorId],
+    );
+    if (!adminCheck.rows.length || adminCheck.rows[0].role !== "admin") {
+      req.session.destroy(() => {
+        res.clearCookie("sid", { path: "/" });
+        res.redirect("/login.html");
+      });
+      return;
+    }
+  } catch (err) {
+    return res.redirect("/dashboard");
+  }
+  req.session.userId = req.session.adminImpersonatorId;
+  delete req.session.adminImpersonatorId;
+  res.redirect("/internal-admin-portal-93847/users");
+});
+
 /* ========= LOGOUT ========= */
+const { logSecurityEvent: logAuthEvent } = require("./middleware/security");
 app.get("/logout", (req, res) => {
+  const userId = req.session && req.session.userId;
+  const ip = req.ip;
   req.session.destroy(() => {
+    if (userId != null || ip) {
+      logAuthEvent("logout", { userId: userId || null, ip, timestamp: new Date().toISOString() });
+    }
+    res.clearCookie("sid", { path: "/" });
     res.redirect("/login.html");
   });
 });
@@ -236,9 +480,52 @@ app.get("/privacy", (req, res) => {
   res.sendFile(__dirname + "/views/privacy.html");
 });
 
+/* ========= ABOUT ========= */
+app.get("/about", (req, res) => {
+  res.sendFile(__dirname + "/views/about.html");
+});
+
+/* ========= DEBUG EMAIL (temporary — remove after verifying SMTP works) ========= */
+app.get("/debug-email", async (req, res) => {
+  try {
+    const { sendTestEmail } = require("./services/emailService");
+    await sendTestEmail();
+    res.json({ success: true, message: "Test email sent to sales@aiagentproperties.com" });
+  } catch (err) {
+    console.error("DEBUG_EMAIL_ERROR:", err.message);
+    if (err.response) console.error("DEBUG_EMAIL SMTP response:", err.response);
+    if (err.code) console.error("DEBUG_EMAIL SMTP code:", err.code);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/* ========= CONTACT SALES ========= */
+app.get("/contact-sales", (req, res) => {
+  res.sendFile(__dirname + "/views/contact-sales.html");
+});
+
+app.post("/contact-sales", async (req, res) => {
+  const { name, email, businessName, message } = req.body || {};
+  if (!name || !email) {
+    return res.redirect("/contact-sales");
+  }
+  try {
+    const { sendContactSalesEmail } = require("./services/emailService");
+    await sendContactSalesEmail({
+      name: String(name).slice(0, 200),
+      email: String(email).slice(0, 254),
+      company: String(businessName || "").slice(0, 200),
+      message: String(message || "").slice(0, 5000),
+    });
+  } catch (err) {
+    console.error("CONTACT_SALES_ROUTE_ERROR:", err.message);
+  }
+  res.redirect("/contact-sales?success=1");
+});
+
 /* ========= BACKWARD COMPAT — /home alias ========= */
 app.get("/home", (req, res) => {
-  res.status(200).send(landingHtml);
+  res.sendFile(__dirname + "/views/landing.html");
 });
 
 /* ========= STRIPE SUCCESS / CANCEL ========= */
@@ -254,7 +541,252 @@ app.get("/cancel", (req, res) => {
   );
 });
 
-/* ========= START SERVER ========= */
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+/* ========= 404 (after all routes) ========= */
+app.use((req, res) => {
+  res.status(404).send("Not Found");
 });
+
+/* ========= GLOBAL ERROR HANDLER (safe: no stack traces to clients) ========= */
+app.use(safeErrorHandler);
+
+/* ========= ENSURE business_profiles HAS WEBSITE COLUMNS ========= */
+async function ensureBusinessProfilesWebsiteColumns() {
+  const pool = require("./services/db");
+  const alters = [
+    'ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS website_url TEXT',
+    'ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS website_knowledge JSONB',
+    'ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS website_training_status TEXT',
+    'ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS website_last_trained_at TIMESTAMPTZ',
+    'ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS ai_agent_name VARCHAR(100)',
+    "ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS knowledge_priority VARCHAR(20) DEFAULT 'website'",
+    "ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS memory_enabled BOOLEAN DEFAULT false",
+    "ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS memory_retention_days INTEGER DEFAULT 30",
+    "ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS strict_grounded_enabled BOOLEAN DEFAULT true",
+    "ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS live_nav_enabled BOOLEAN DEFAULT true",
+    "ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS citation_enabled BOOLEAN DEFAULT true",
+    "ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS max_reply_sources INTEGER DEFAULT 2",
+    "ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS language VARCHAR(16)",
+    "ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS website_type VARCHAR(50)",
+    "ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS detected_language VARCHAR(16)",
+  ];
+  for (const sql of alters) {
+    try {
+      await pool.query(sql);
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Migration warning:", err.message);
+      }
+    }
+  }
+  await ensureBusinessWebsitePagesTable();
+  await ensureBusinessWebsiteChunksTable();
+}
+
+async function ensureBusinessWebsitePagesTable() {
+  const pool = require("./services/db");
+  const sql = `
+    CREATE TABLE IF NOT EXISTS business_website_pages (
+      id SERIAL PRIMARY KEY,
+      business_id INTEGER NOT NULL REFERENCES business_profiles(id) ON DELETE CASCADE,
+      url TEXT NOT NULL,
+      page_type VARCHAR(50) NOT NULL DEFAULT 'general',
+      title TEXT,
+      cleaned_content TEXT,
+      metadata_json JSONB,
+      importance_score NUMERIC(5,2) DEFAULT 0,
+      content_hash VARCHAR(64),
+      extracted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE(business_id, url)
+    )`;
+  try {
+    await pool.query(sql);
+    await pool.query("CREATE INDEX IF NOT EXISTS idx_business_website_pages_business_id ON business_website_pages(business_id)");
+    await pool.query("CREATE INDEX IF NOT EXISTS idx_business_website_pages_page_type ON business_website_pages(business_id, page_type)");
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Migration warning (business_website_pages):", err.message);
+    }
+  }
+}
+
+async function ensureBusinessWebsiteChunksTable() {
+  const pool = require("./services/db");
+  const sql = `
+    CREATE TABLE IF NOT EXISTS business_website_chunks (
+      id SERIAL PRIMARY KEY,
+      business_id INTEGER NOT NULL REFERENCES business_profiles(id) ON DELETE CASCADE,
+      page_url TEXT,
+      page_type VARCHAR(50),
+      content_chunk TEXT,
+      embedding JSONB,
+      extracted_at TIMESTAMPTZ DEFAULT NOW()
+    )`;
+  try {
+    await pool.query(sql);
+    await pool.query("CREATE INDEX IF NOT EXISTS idx_business_website_chunks_business_id ON business_website_chunks(business_id)");
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("Migration warning (business_website_chunks):", err.message);
+    }
+  }
+}
+
+/* ========= ENSURE PUBLIC AGENT TABLES EXIST (business_knowledge, conversations, messages, leads) ========= */
+async function ensurePublicAgentTables() {
+  const pool = require("./services/db");
+  const statements = [
+    `CREATE TABLE IF NOT EXISTS business_knowledge (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      description TEXT,
+      services TEXT,
+      pricing TEXT,
+      faqs TEXT,
+      tone TEXT,
+      website_url TEXT,
+      instagram_url TEXT,
+      facebook_url TEXT,
+      restrictions TEXT,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE(user_id)
+    )`,
+    `CREATE TABLE IF NOT EXISTS conversations (
+      id SERIAL PRIMARY KEY,
+      business_id INTEGER NOT NULL,
+      visitor_id TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
+    `CREATE TABLE IF NOT EXISTS messages (
+      id SERIAL PRIMARY KEY,
+      conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+      sender TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
+    `CREATE TABLE IF NOT EXISTS leads (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      message TEXT,
+      email TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
+    'ALTER TABLE conversations ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW()',
+    'CREATE INDEX IF NOT EXISTS idx_conversations_business_id ON conversations(business_id)',
+    `DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_conversations_business_id') THEN
+        ALTER TABLE conversations ADD CONSTRAINT fk_conversations_business_id
+          FOREIGN KEY (business_id) REFERENCES business_profiles(id) ON DELETE CASCADE;
+      END IF;
+    END $$`,
+    'CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id)',
+    'CREATE INDEX IF NOT EXISTS idx_leads_user_id ON leads(user_id)',
+    // Leads schema upgrade: new columns
+    "ALTER TABLE leads ADD COLUMN IF NOT EXISTS name TEXT",
+    "ALTER TABLE leads ADD COLUMN IF NOT EXISTS phone TEXT",
+    "ALTER TABLE leads ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'new'",
+    "ALTER TABLE leads ADD COLUMN IF NOT EXISTS conversation_id INTEGER",
+    "ALTER TABLE leads ADD COLUMN IF NOT EXISTS business_id INTEGER",
+    // Leads FK: conversation_id → conversations(id)
+    `DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_leads_conversation_id') THEN
+        ALTER TABLE leads ADD CONSTRAINT fk_leads_conversation_id
+          FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE SET NULL;
+      END IF;
+    END $$`,
+    // Leads FK: business_id → business_profiles(id)
+    `DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_leads_business_id') THEN
+        ALTER TABLE leads ADD CONSTRAINT fk_leads_business_id
+          FOREIGN KEY (business_id) REFERENCES business_profiles(id) ON DELETE CASCADE;
+      END IF;
+    END $$`,
+    // Leads indexes
+    'CREATE INDEX IF NOT EXISTS idx_leads_business_id ON leads(business_id)',
+    'CREATE INDEX IF NOT EXISTS idx_leads_conversation_id ON leads(conversation_id)',
+    'CREATE INDEX IF NOT EXISTS idx_leads_email ON leads(email)',
+    // Backfill business_id from business_profiles
+    `UPDATE leads SET business_id = bp.id FROM business_profiles bp WHERE leads.user_id = bp.user_id AND leads.business_id IS NULL`,
+    // Default status for existing rows
+    "UPDATE leads SET status = 'new' WHERE status IS NULL",
+    `CREATE TABLE IF NOT EXISTS business_products (
+      id SERIAL PRIMARY KEY,
+      business_id INTEGER NOT NULL,
+      title TEXT,
+      description TEXT,
+      price TEXT,
+      image_url TEXT,
+      page_url TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
+    `CREATE TABLE IF NOT EXISTS business_visitor_memory (
+      id SERIAL PRIMARY KEY,
+      business_id INTEGER NOT NULL REFERENCES business_profiles(id) ON DELETE CASCADE,
+      visitor_id TEXT NOT NULL,
+      memory_text TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (business_id, visitor_id)
+    )`,
+    `CREATE TABLE IF NOT EXISTS agent_audit_logs (
+      id SERIAL PRIMARY KEY,
+      event_type TEXT NOT NULL,
+      actor_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      business_id INTEGER REFERENCES business_profiles(id) ON DELETE SET NULL,
+      conversation_id INTEGER,
+      visitor_id TEXT,
+      outcome TEXT,
+      details_json JSONB,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`,
+    'CREATE INDEX IF NOT EXISTS idx_business_products_business_id ON business_products(business_id)',
+    `DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_business_products_business_id') THEN
+        ALTER TABLE business_products ADD CONSTRAINT fk_business_products_business_id
+          FOREIGN KEY (business_id) REFERENCES business_profiles(id) ON DELETE CASCADE;
+      END IF;
+    END $$`,
+    'CREATE INDEX IF NOT EXISTS idx_business_visitor_memory_business_id ON business_visitor_memory(business_id)',
+    'CREATE INDEX IF NOT EXISTS idx_agent_audit_logs_created_at ON agent_audit_logs(created_at DESC)',
+    'CREATE INDEX IF NOT EXISTS idx_agent_audit_logs_business_id ON agent_audit_logs(business_id, created_at DESC)',
+  ];
+  for (const sql of statements) {
+    try {
+      await pool.query(sql);
+    } catch (err) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Migration warning:", err.message);
+      }
+    }
+  }
+}
+
+/* ========= START SERVER ========= */
+const server = app.listen(PORT, "0.0.0.0", async () => {
+  if (process.env.NODE_ENV === "development") {
+    const { initDb } = require("./scripts/initDb");
+    await initDb();
+  }
+  await ensurePublicAgentTables();
+  await ensureBusinessProfilesWebsiteColumns();
+  console.log("Server running on port", PORT);
+});
+
+function gracefulShutdown(signal) {
+  console.log(signal, "received: closing server and connections");
+  server.close((err) => {
+    if (err) console.error("SERVER_CLOSE_ERROR:", err.message);
+    pool.end().catch((e) => console.error("POOL_CLOSE_ERROR:", e.message)).then(() => {
+      try {
+        require("./services/redis").close();
+      } catch (_) {}
+      process.exit(err ? 1 : 0);
+    });
+  });
+  setTimeout(() => {
+    console.error("Graceful shutdown timeout: forcing exit");
+    process.exit(1);
+  }, 15000);
+}
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
